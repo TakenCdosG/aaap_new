@@ -1,0 +1,9 @@
+name = AAAP Events
+description = AAAP Helper Module for Events Aspects.
+package = AAAP
+core = 7.x
+
+
+version = "7.x"
+core = "7.x"
+project = "aaap"

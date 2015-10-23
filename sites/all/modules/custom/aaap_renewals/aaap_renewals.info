@@ -1,0 +1,9 @@
+name = AAAP Renewals
+description = AAAP Helper Module for Renewal aspects.
+package = AAAP
+core = 7.x
+
+
+version = "7.x"
+core = "7.x"
+project = "aaap"

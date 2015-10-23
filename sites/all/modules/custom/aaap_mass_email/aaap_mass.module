@@ -1,0 +1,304 @@
+<?php
+
+require_once DRUPAL_ROOT.'/sites/all/modules/config/config.php';
+require_once DRUPAL_ROOT.'/includes/database/database.inc';
+require_once DRUPAL_ROOT.'/sites/all/libraries/phpmailer/class.phpmailer.php';
+
+define('GLOBAL_CONFIG','7');
+
+//Mass Email Form
+//define('MASS_EMAIL_FORM_ID','139');
+//define('MEMBER_GROUP_FIELD_ID','13');
+global $MASS_EMAIL_GROUPS;
+if(SITE_NAME == 'AASA'){
+
+    $MASS_EMAIL_GROUPS = array(
+        'all' => t('All AASA Members'),
+        'eastern' => t('AASA Eastern Members'),
+        'midwest' => t('AASA MidWest Members'),
+        'southern' => t('AASA Southern Members'),
+        'western' => t('AASA Western Members'),
+        'honorary' => t('Honorary Members'),
+        'directors' => t('Board of Directors'));
+
+}elseif(SITE_NAME == 'AAAP'){
+
+    $MASS_EMAIL_GROUPS = array(
+        'all' => t('All AAAP Members'),
+        'directors' => t('Board of Directors'));
+}
+
+function aaap_mass_menu(){
+    $items = array();
+
+
+    $items['query-members'] = array( //this creates a URL that will call this form at "examples/form-example"
+        'title' => 'Mass Email', //page title
+        'page callback' => 'drupal_get_form', //this is the function that will be called when the page is accessed.  for a form, use drupal_get_form
+        'page arguments' => array('aaap_mass_form'), //put the name of the form here
+        'access callback' => '_access_helper',
+        'access arguments' => array(MASS_EMAIL_PATH)
+    );
+
+//    $items['query-members-beta'] = array( //this creates a URL that will call this form at "examples/form-example"
+//        'title' => 'Query Members', //page title
+//        'page callback' => 'aaap_query_members', //this is the function that will be called when the page is accessed.  for a form, use drupal_get_form
+//        'access callback' => TRUE
+//    );
+
+    return $items;
+}
+
+
+function aaap_query_members(){
+
+    return drupal_render(drupal_get_form('aaap_mass_form'));
+}
+
+function aaap_mass_form($form, &$form_state) {
+
+
+    $form['#prefix'] = '<div class="title_blue_one">Query Members</div>';
+
+global $MASS_EMAIL_GROUPS;
+
+    $form['group'] = array(
+        '#type' => 'select', //you can find a list of available types in the form api
+        '#title' => t('Group'),
+        '#options' => $MASS_EMAIL_GROUPS,
+        '#required' => TRUE, //make this field required
+    );
+
+
+    $form['subject'] = array(
+        '#type' => 'textfield', //you can find a list of available types in the form api
+        '#title' => 'Subject',
+        '#required' => TRUE, //make this field required
+        '#size' => 30,
+    );
+
+    $form['file'] = array(
+        '#type' => 'file',
+        '#title_display' => 'before',
+        '#title' => t('Attach a file'),
+        '#description' => t('Upload a file, allowed extensions: jpg, png, gif, pdf, xls, xlsx, doc, docx'),
+    );
+
+    $form['message'] = array(
+        '#type' => 'text_format', //you can find a list of available types in the form api
+        '#title' => 'Message',
+        '#cols' => '500',
+        '#required' => TRUE, //make this field required
+    );
+
+	$form['note'] = array(
+		'#markup' => t('<div><p class="body_internal_description_text_excepcion">PLEASE NOTE: To avoid formatting issues with your email, when pasting from a document, please use the Paste from Word feature in the editor above. It is the icon with the clipboard and the Word icon. Simply click the icon, paste your text into the window and click insert.</p></div>')
+	);
+
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Submit'),
+    );
+    //dsm($form);
+    return $form;
+}
+
+function get_style_by_class_name($class_name,$path_css_file){
+
+    $styles = file_get_contents($path_css_file);
+    $styles = preg_replace("/[\n|\r|\n\r]/i","",$styles);
+    $styles = str_replace(' ', '', $styles);
+    preg_match_all("/.".$class_name."\{(.*?)\}/",$styles,$matches);
+    return $matches;
+}
+
+function aaap_mass_form_submit($form, &$form_state){
+
+    if($form['#id'] == 'aaap-mass-form'){
+
+        global $MASS_EMAIL_GROUPS;
+
+        $path_css_file = DRUPAL_ROOT."/sites/all/themes/".strtolower(SITE_NAME)."/css/editor.css";
+        $message = $form_state['values']['message']['value'];
+        //$message = "<p class='internal-sub-title'>TEXTO UNO</p><p class='internal-title'>TEXTO DOS</p>";
+
+        preg_match_all('/class="(.*?)"/',$message,$matches);
+
+        foreach($matches[1] as $key => $value){
+
+            $css_styles = get_style_by_class_name($value,$path_css_file);
+            $message = str_replace($value,$css_styles[1][0],$message);
+            $message = str_replace("class","style",$message);
+           // dsm($message);
+        }
+
+        $message = t($message);
+
+
+
+        $group = t($form_state['values']['group']);
+        $recipients = aaap_mass_get_recipients($group);
+        $subject = t($form_state['values']['subject']);
+        $extensions = 'jpg png gif pdf xls xlsx doc docx';
+        $validators = array('file_validate_extensions' => array($extensions),
+            'file_validate_size' => array(32*1024*1024*1024));
+        $file = file_save_upload('file', $validators, 'public://');
+        //dsm($_FILES['files']['error']['file']);
+        $valid_ext = aaap_mass_valid_ext($_FILES['files']['name']['file'], $extensions);
+
+        //dsm($_FILES['files']['error']['file']);
+       // dsm($valid_ext);
+        if($valid_ext or $_FILES['files']['error']['file'] != 0){
+            // Check $_FILES['upfile']['error'] value.
+
+            switch ($_FILES['files']['error']['file']) {
+                case UPLOAD_ERR_OK:
+                case UPLOAD_ERR_NO_FILE:
+                    $to = $MASS_EMAIL_GROUPS[$group];
+
+                    $success = aaap_mass_send($subject, $message, $recipients, $to, $file);
+                   // dsm($file);
+                //dsm($success);
+                    if($success){
+                        drupal_set_message("Email successfully sent!");
+                    }
+                    break;
+
+                case UPLOAD_ERR_INI_SIZE:
+                case UPLOAD_ERR_FORM_SIZE:
+                    drupal_set_message("Email was not sent");
+                    break;
+
+                default:
+                    drupal_set_message("Email was not sent");
+                    break;
+            }
+
+        }else{
+            drupal_set_message("Email was not sent. Invalid file type.");
+        }
+
+
+
+    }
+
+}
+
+
+function aaap_mass_valid_ext($filename, $valid_extensions){
+
+    $ext = explode('.', $filename);
+
+    if( strpos($valid_extensions, $ext[sizeof($ext)-1])===FALSE ){
+        return false;
+    }else{
+        return true;
+    }
+
+}
+
+
+function aaap_mass_send($subject, $message, $recipients, $to, $file){
+
+$email = new PHPMailer();
+$email->CharSet = 'UTF-8';
+$email->From      = SYSTEM_MAIL;
+$email->FromName  = SITE_NAME;
+$email->Subject   = $subject;
+$email->Body      = $message;
+$email->IsHTML(true);
+$email->AddAddress(SYSTEM_MAIL, $to);
+
+    foreach($recipients as $rcp){
+//        dsm($rcp);
+        $email->addBCC( $rcp);
+    }
+
+        $file_to_attach = file_create_url($file->uri);
+        $file_to_attach = str_replace('https://', '', $file_to_attach);
+        $file_to_attach = explode('/', $file_to_attach);
+        unset($file_to_attach[0]);
+        $file_to_attach = implode('/', $file_to_attach);
+
+
+        $email->AddAttachment($file_to_attach, $file->filename);
+
+        return $email->Send();
+
+}
+
+function aaap_mass_get_recipients($group){
+
+    $arr = array();
+
+    switch($group){
+
+        case 'eastern':
+        case 'midwest':
+        case 'southern':
+        case 'eastern':
+        case 'western':
+            $result = db_query("SELECT u.mail as mail FROM users u, field_data_field_region r, users_roles ur WHERE r.entity_id = u.uid AND r.field_region_value = :region AND u.uid = ur.uid AND ur.rid = 5 GROUP BY u.uid", array(':region' => $group));
+            break;
+
+        case 'honorary':
+            $result = db_query("SELECT u.mail as mail FROM users u, field_data_field_type_of_member r, users_roles ur WHERE r.entity_id = u.uid AND r.field_type_of_member_value = :type AND u.uid = ur.uid AND ur.rid = 5 GROUP BY u.uid", array(':type' =>'honorary'));
+            break;
+
+        case 'all':
+            $result = db_query("SELECT u.mail as mail FROM users u, users_roles ur WHERE u.uid = ur.uid AND ur.rid = 5 GROUP BY u.uid");
+            break;
+
+        case 'directors':
+//            $result = db_query("SELECT u.mail as mail FROM users u, user_roles ur WHERE u.uid = ur.uid AND ur.rid = 5 GROUP BY u.uid");
+            $config = node_load(GLOBAL_CONFIG);
+            return explode(",", $config->field_board_of_directors['und'][0]['value']);
+            break;
+
+
+    }
+
+    foreach ($result as $record) {
+        $arr[] = $record->mail;
+    }
+
+    return $arr;
+
+}
+
+
+
+//function aaap_mass_webform_submission_insert($node, $submission) {
+//
+//    //dsm($submission);
+//
+//    if($submission->nid == MASS_EMAIL_FORM_ID) {
+//
+//        global $base_root;
+////        $submission->data[POST_JOB_EMAIL_FIELD_ID]['value'][0]
+//
+//        mail(ADMIN_MAIL, SITE_NAME . ' Sponsorship Payment Received', 'A sponsorship has signed up for a ' . $node->title . '. Click here to see the registration information: ' . $base_root . '/node/' . $node->nid . '/submission/' . $submission->sid . '/edit' . "\r\n \r\n"
+//            . 'Thank you,' . "\r\n"
+//            . SITE_NAME, HEADERS);
+//    }
+//
+//}
+//
+//function aaap_extra_webform_submission_presave($node, &$submission) {
+//
+//
+//}
+//
+//
+//function aaap_extra_form_alter(&$form, &$form_state, $form_id){
+//    global $user;
+//    if(!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)){
+//
+//
+//    }
+//
+//
+//}
+
+

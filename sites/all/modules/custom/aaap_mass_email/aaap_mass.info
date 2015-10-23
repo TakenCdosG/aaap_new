@@ -1,0 +1,9 @@
+name = AAAP Mass
+description = AAAP Mass Email Module.
+package = AAAP
+core = 7.x
+
+
+version = "7.x"
+core = "7.x"
+project = "aaap"

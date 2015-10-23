@@ -1,0 +1,1415 @@
+body{
+    padding: 0px;
+    margin: 0px;
+    background: #d9d5cb;
+    font-family: 'allerregular';
+    color: #6c6963;
+}
+body.admin-menu {
+    margin-top: 29px !important;
+}
+ul.primary.tabs{
+    margin: 8px 0px;
+    padding: 0px;
+}
+.tabs, div.messages{
+    float: left;
+    width: 95%;
+    padding-left: 4%;
+    padding-right: 1%;
+    margin: 0;
+    border: 0px;
+}
+.container{
+    width: 1001px;
+    margin: 0px auto;
+}
+.node p{
+    line-height: 26px;
+}
+#main-wrapper{
+    width: 100%;
+    float: left;
+    background-color: #ECE9E1;
+}
+/*HEADER*/
+
+#header{
+    background: #235282;
+    width: 100%;
+    float: left;
+    padding-top: 9px;
+    padding-bottom: 5px;
+    min-height: 73px;
+}
+#header_left{
+    float: left;
+    margin-left: 15px;
+    padding-top: 3px;
+}
+#header_right{
+    float: right;
+    color:#fff;
+    text-align: right;
+    margin-right: 12px;
+}
+
+a{
+    font-family: 'allerbold';
+    color: #235383;
+    font-size: 16px;
+    text-decoration: none;
+    line-height: 16px;
+}
+
+#body_event a{
+    text-decoration: underline;
+}
+
+/*HEADER MENU*/
+
+#block-menu-menu-menu > div > ul > li.first.leaf {
+    padding-right: 12px;
+}
+#block-menu-menu-menu{
+    width: 1001px;
+    margin: 0 auto; 
+}
+.region-header{
+    background: #BFCFDF;
+    width: 100%;
+    float: left;
+}
+.region-header .content {
+    float: left; 
+    margin-top: 6px;
+    text-transform: uppercase;
+    padding-left: 2px;
+    margin: 0px;
+    margin-left: 95px;
+}
+.region-header .content ul li, .region-header .content ul li.expanded, .region-header .content ul{
+    list-style: none;
+}
+.region-header .content ul li a{
+    text-decoration: none;
+    color: #1f4770;
+    font-size: 16px;
+    font-family: 'allerbold';
+    padding: 0px 4px;
+    text-transform: uppercase;
+    line-height: 26px;
+}
+ul.menu{
+    margin: 0px;
+}
+#block-menu-menu-menu > div.content > ul > li.last.leaf {
+    background: none;
+}
+.region-header .content >ul > li {
+    float: left;
+    background: url('../image/line.fw.png') right bottom no-repeat;
+    padding-top: 3px;
+    padding-bottom: 9px;
+    margin-left: 0px;
+}
+#block-menu-menu-menu > div.content > ul > li.last.leaf {
+    background: none;
+}
+#block-menu-menu-menu ul li ul{
+    display: none; 
+    padding: 0px 0px 5px 0px;
+    position: absolute;
+    background-color: #BFCFDF;
+    z-index: 1000;
+    margin-top: 9px;
+}
+#block-menu-menu-menu ul li ul li{
+    padding:  0px;
+    margin: 0px 3px;
+    border-bottom: #fff;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+}
+#block-menu-menu-menu ul li ul li a{    
+    padding: 0px;
+}
+#block-menu-menu-menu ul li ul li:hover a{    
+    color:white;
+}
+#block-menu-menu-menu ul li ul li.last{
+    border-bottom: none;
+}
+/**** HEADER RIGHT*****/
+#block-user-login {
+    width: 100%;
+    margin-right: 0px;
+    margin-top: 7px;
+    margin-bottom: 8px;
+    float: right;
+    height: 25px;
+}
+.text_login{
+    display: block;
+    font-weight: normal;
+    color: #fff;
+    font-size: 12px;
+    float: right;
+    margin-right: 92px;
+    margin-top: -8px;
+    text-decoration: underline;
+    font-family: 'allerregular'
+}
+.form-item, .form-actions {
+    margin-top: 0em; 
+    margin-bottom: 0em; 
+}
+#header .form-type-password, #header .form-item-name{
+    display: inline-block;
+}
+#header #edit-name,
+#header #edit-pass{
+    width: 107px;
+}
+#edit-name{
+    background: #C2D4E6;
+    border: aliceblue;
+    margin-right: 8px;   
+    color: #1d446d;
+    font-size: 14px;
+    padding: 2px 0px 2px 6px;
+    height: 21px;
+}
+#edit-pass{
+    padding: 2px 0px 2px 6px;
+    background: #C2D4E6;
+    border: aliceblue;
+    height: 21px;
+    margin-right: 8px;
+    color: #1d446d;
+    font-size: 14px;
+}
+.form-item-name input:-webkit-autofill{
+    background: #C2D4E6;
+}
+#user-login-form .item-list{
+    display:  none;
+}
+#user-login-form label {
+    display: none;
+}
+#user-login .form-item{
+    margin-bottom: 10px;
+}
+.header_user_links a{
+    font-size: 14px;
+    color:#fff;
+}
+#header_right .user_name{
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 17px;
+    display: block;
+    color: #FFF;
+}
+#link_profile{
+    margin-right: 8px;
+}
+#link_logout{
+    margin-left: 8px;
+}
+#header_right #user-login-form #edit-submit,#header_right #user-login-form #edit-submit--2{
+    width: 78px;
+}
+#header_right #user-login-form #edit-actions,#header_right #user-login-form #edit-actions--2,#header_right #user-login-form #edit-actions--3{
+    display: inline-block;
+}
+/** HOME **/
+
+#home_left{
+    float: left;
+    width: 726px;
+    margin-right: 10px;   
+}
+.fotorama__dot{
+    border-color: #BFBFBF;
+}
+.fotorama__dot{
+    width: 8px;
+    height: 8px;
+    background: #BFBFBF;
+}
+.fotorama__nav__frame.fotorama__active .fotorama__dot{
+    width: 10px;
+    height: 10px;
+    border: initial;
+    background: #235383;
+}
+
+#home_left > div.fotorama.fotorama1396283358664 > div > div.fotorama__stage {
+    height: 448px;
+}
+.fotorama__nav--dots .fotorama__nav__frame{
+    padding-right: 20px;
+}
+.fotorama__nav, .fotorama__nav__frame {
+    margin-bottom: -3px;
+}
+
+/** EVENTS WIDGET **/
+
+#events_widget{
+    float: left;
+    width: 213px;
+    background: #EDE9E1;
+    height: 440px;
+    padding:16px;
+}
+.view-display-id-block_1 .views-field-title a,.view-display-id-block_1 .views-field-field-date a{
+
+    line-height: 20px;
+    color: #245383;
+    font-size: 14px;
+    font-family: 'allerbold';
+    padding-bottom: 3px;
+    text-decoration: none;
+
+}
+.view-display-id-block_1 .views-field-title a{
+    font-family: 'allerregular'
+}
+.view-display-id-block_1 .views-row{
+    padding-top: 20px;
+}
+.view-display-id-block_1 .view-eventes{
+    line-height:22px;
+}
+.view-display-id-block_1 .views-field-field-link-widget-view a{
+    color: #245383;
+    font-size: 14px;
+    text-decoration: underline;
+
+}
+.view-display-id-block_1 .views-field-body p{
+    margin: 0px;
+    color: #245383;
+    font-size: 14px;
+}
+#widget_internal{
+    float: left;
+    margin-top: 26px;
+    margin-bottom: 11px;
+}
+.page-user-edit.page-user .region-content{
+    padding: 40px;
+    width: 921px;
+}
+.page-user .tabs{
+    display: none;
+}
+
+.region-content{
+    background: #fff;
+    width: 981px;
+    float: left;
+    padding: 10px;
+}
+#title_slider{
+    font-size: 34px;
+    margin-left: 17px;
+    margin-top: -51px;
+    color: #fff;
+}
+#text_slider{
+    font-size: 18px;
+    color: #6c6963;
+    padding-top: 21px;
+    margin-left: 21px;
+    width: 650px;
+}
+
+#widget_color_home{
+    width: 100%;
+    float: left;
+    background: #ADA9A1;
+}
+#title_widget_home{
+    padding-bottom: 9px;
+    margin-top: -13px;
+}
+#title_widget_home a{
+    font-family: 'allerbold';
+    color: #245383;
+    font-size: 26px; 
+
+}
+#title_widget_events{
+    color: #245383;
+    font-size: 20px;
+    font-family: 'allerbold';
+}
+#body_widget_home{
+    font-family: 'allerbold';
+    color: #fff;
+    font-size: 18px;
+    line-height: 24px;
+    width: 271px;
+    height: 123px;
+}
+#link_widget_home{
+    color: #efeadc;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+.widget0{
+    width: 303px;
+    background: url('../image/widget_line.fw.png') right no-repeat; 
+}
+.widget1{
+    width: 302px;
+    background: url('../image/widget_line.fw.png') right no-repeat; 
+    padding-left: 26px;
+}
+.widget2{
+    width: 283px;
+    padding-left: 17px;
+}
+#widget_home {
+    margin-top: 20px;
+    margin-bottom: 25px;
+    float: left;
+    margin-left: 20px;
+}
+#footer_bottom{
+    color: #66625a;
+    width: 100%;
+    float: left;
+    padding-top: 35px;
+    margin-left: 24px;
+    font-size: 14px;
+    padding-bottom: 78px;
+}
+
+.social{
+    display: block;
+    float: left;
+    margin-left: 16px;
+    padding-right: 16px;
+    margin-top:  3px;
+}
+#line_social{
+    float: left;
+    background: url('../image/line_menu_footer.png');
+    width: 2px;
+    height: 16px;
+    margin-top: 6px;
+}
+#social_icons{
+    height: 19px;
+    width: 142px;
+    margin-top: 4px;
+    float: left;
+}
+.flexlider_background{
+    margin-top: -98px;
+}
+#image_background {
+    margin-top: -92px;
+    margin-left: 9px;
+}
+#body_widget_home p{
+    margin: 0px;
+}
+#widget_home a{
+    text-decoration: none;
+}
+::-webkit-input-placeholder { 
+    background: #C2D4E6;
+    color: #1d446d;
+    font-size: 14px;
+
+}
+::-moz-placeholder { 
+    background: #C2D4E6;
+    color: #1d446d;
+    font-size: 14px;
+
+} 
+:-ms-input-placeholder { 
+    background: #C2D4E6;
+    color: #1d446d;
+    font-size: 14px;
+
+} /* ie */
+input:-moz-placeholder {
+    background: #C2D4E6;
+    color: #1d446d;
+    font-size: 14px; 
+
+}
+#body_internal_page > ul {
+    padding-left: 18px;
+}
+#body_internal_page li{
+    margin-bottom:20px;
+}
+
+.page-event-registration .button_event_action{
+    float: none;
+}
+
+/****** FOOTER ******/
+
+#footer{
+    background:  url('../image/footer_menu.fw.png') repeat-x;
+    height: 174px;
+    float: left;
+    width: 100%;
+}
+#menu_footer{
+    float: left; 
+    margin-top: 6px;
+    text-transform: uppercase;
+    padding-left: 2px;
+    margin: 0px;
+    margin-left: -38px;
+    padding-top: 18px;
+}
+#menu_footer .content ul li, #menu_footer .content ul li.expanded, #menu_footer .content ul{
+    list-style: none;
+}
+#menu_footer .content >ul > li{
+    float: left;  
+    background: url('../image/line_menu_footer.png') right bottom no-repeat;
+    padding: 0px 15px 0px 6px;
+}
+#menu_footer .content >ul > li.last{
+    background: none;
+}
+#edit-search-block-form--2 {
+    width: 167px;
+    height: 23px;
+    border: none;
+    margin-right: 6px;
+}
+#search-block-form > div > div {
+    padding-top: 17px;
+    width: 251px;
+    float: left;
+    margin-left: 210px;
+}
+#button_join{
+    padding-left: 8px;
+    padding-right: 8px;
+    height: 22px;
+    background: url('../image/button_loggin_aaap.fw.png');
+    color: #fff;
+    font-family: 'allerbold';
+    font-size: 12px;
+    text-align: center;
+    float: right;
+    padding-top: 1px;
+    text-decoration: none;
+    border: solid 1px #757066;
+}
+
+#menu_footer .content ul li a{
+    text-decoration: none;
+    color: #245383;
+    font-size: 14px;
+    font-family: 'allerbold';
+    padding: 0px 4px;
+    text-transform: uppercase;   
+}
+
+#footer_bottom a{
+    font-size: 14px;
+}
+
+/*
+* User Registration Form Styles
+*/
+
+
+/*
+* General Layout of form
+* Common Styles for Fields & Fieldsets
+*/
+.cancellation_policy,.cancellation_policy_text{
+    font-size: 14px;
+}
+.page-user .heading_title{
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    color: #235383;
+    font-size: 30px;
+}
+.page-user .heading_text{
+    color: #6C6963;
+    font-family: 'allerbold';
+    font-size: 16px;
+    margin-bottom: 4px;
+    margin-bottom: 34px;
+}
+
+.page-user #edit-account .description{
+    display:none;
+}
+.page-user #user_user_form_group_persona_information{
+    float: left;
+}
+.page-user #user_user_form_group_persona_information .fieldset-wrapper{
+    width: 440px;
+}
+.just_password #user_user_form_group_persona_information, .just_password .form-type-password{
+    float: inherit;
+}
+.page-user .form-type-password-confirm{
+    margin-top: 6px;
+}
+.page-user #user_user_form_group_professional_information{
+    width: 473px;
+    float: left;
+}
+
+.page-user #user_user_form_group_membership_information{
+    width: 542px;
+
+}
+.page-user #edit-field-to-whom-do-you-report{
+    margin-top: 30px;
+}
+.page-user #edit-field-to-whom-do-you-report-und-0 > div > div,
+.page-user #edit-field-head-admin-info-und-0 > div > div{
+    display: inline-block;
+}
+.page-user #edit-field-head-admin-info-und-0{
+    padding-top: 0;
+}
+.page-user #edit-field-head-admin-info-und-0 legend{
+    display: none;
+}
+.page-user #edit-field-to-whom-do-you-report-und-0-field-name-report-und-0-value,
+.page-user #edit-field-head-admin-info-und-0-field-name-head-admin-und-0-value{
+    margin-right: 10px;
+}
+.page-user fieldset{
+    border: none;
+    padding: 0px;
+}
+.page-user #edit-field-no-attach{
+    margin-bottom: 10px;
+}
+.page-user fieldset legend, .page-user fieldset .custom_legend{
+    padding: 0;
+    text-transform: uppercase;
+    color: #245383;
+    font-size: 16px;
+    font-family: 'allerbold';
+}
+.page-user #field-to-whom-do-you-report-add-more-wrapper fieldset{
+    padding-top: 12px;
+}
+.page-user #field-to-whom-do-you-report-add-more-wrapper legend{
+    color: #474747;
+    font-size: 16px;
+    margin-bottom: 4px;
+    font-weight: normal;
+    text-transform: none;
+    font-family: allerregular;
+}
+.page-user #edit-picture legend{
+    display: none;
+}
+#user_user_form_group_persona_information{
+    margin-bottom: 28px;
+}
+.form-item label, .password-strength-title{
+    color: #474747;
+    font-size: 16px;
+    margin-bottom: 4px;
+    font-weight: normal;
+}
+
+.form-item-pass-pass1 label{
+    display: none;
+}
+
+.page-user .form-text{
+    width: 223px;
+    height: 18px;
+    border: 1px #6C6963 solid;
+    padding: 2px; 
+}
+
+.page-user .form-wrapper,
+.page-user .form-item-current-pass,
+.page-user .form-item-mail,
+.page-user .form-item-pass-pass1,
+.page-user .form-item-pass-pass2{
+    margin-bottom: 18px;
+}
+.page-user #edit-field-others-organizations{
+    margin-bottom: 10px;
+}
+.password-strength{
+    width: 229px;
+    float: inherit;
+    margin-bottom: 18px;
+}
+
+.page-user .form-item.headin-form-item{
+    margin-bottom: 8px;
+}
+
+.page-user .form-type-radio{
+    display: inline;
+}
+.page-user input.form-checkbox, input.form-radio {
+    vertical-align: middle;
+    margin-top: -3px;
+}
+.page-user label.option{
+    margin-left: -5px;
+}
+.page-user #edit-field-others-organizations .form-type-radio{
+    display: block;
+}
+.page-user #user_user_form_group_membership_information{
+    width: 100%;
+    border-top: solid 1px #C9C9C9;
+    clear: left;
+}
+#user_user_form_group_membership_information legend{
+    padding-right: 20px;
+}
+
+.page-user .custom_legend{
+    display: none;
+}
+
+.page-user fieldset{
+    padding-top: 38px;
+}
+
+#edit-timezone{
+    display: none;
+}
+
+/*
+* Hack to hide the labels of certain fields in the form
+* Hide the main label of field but show the labels of the options
+*/
+.page-user #edit-field-institution-type label, 
+.page-user #edit-field-no-attach label,
+.page-user #edit-field-attach label,
+.page-user #edit-field-new-or-renewal label,
+.page-user #edit-field-letter-attachment label,
+.page-user #edit-field-other-organization label{
+    display: none;
+}    
+.page-user #edit-field-institution-type-und label,
+.page-user #edit-field-no-attach-und label,
+.page-user #edit-field-attach-und label,
+.page-user #edit-field-new-or-renewal-und label,
+.page-user #edit-field-letter-attachment-und label,
+.page-user #edit-field-other-organization-und label{
+    display: inline;
+}    
+
+
+/***** VIEW MEMBER PROFILE *****/
+
+.page-user .region-content{
+    padding: 23px;
+    width: 938px;
+    padding-left: 40px;
+}
+.user_custom_profile{
+    margin: 0px;
+}
+.user_custom_profile .user_name{
+    font-size: 34px;
+    color:#235383;
+    margin-bottom: 40px;
+    width: 100%;
+    clear: both;
+}
+.user_custom_profile .col{
+    float: left;
+}
+
+.profile .user-picture{
+    float: inherit;
+    margin: 0px;
+}
+
+.user_custom_profile .col.picture{
+    width: 168px;
+    margin-right: 24px;
+}
+.user_custom_profile .block{
+    background-color: #F3F1EB;
+    padding: 15px;
+    width: 330px;
+}
+.user_custom_profile .block.one{
+    margin-right: 12px;
+}
+.field_custom_profile.address.one{
+    margin-top: 25px;
+}
+.field_custom_profile.address label,.field_custom_profile.request label,.field_custom_profile.request .value_custom_profile{
+    display: block;
+}
+.field_custom_profile.request {
+    margin-top: 15px;
+}
+.field_custom_profile,.value_custom_profile{
+    color:#474747;
+    font-size: 16px;
+    line-height: 21px;
+}
+
+.field_custom_profile label{
+    font-family: 'allerbold';
+    margin-right: 5px;
+}
+.field_custom_profile label, .field_custom_profile .value_custom_profile{
+    display: inline-block;
+}
+.value_custom_profile.group_fields{
+    display: block;
+}
+.page-user #edit-picture{
+    padding-top: 5px;
+}
+#user-login .description{
+    width: 300px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    display: none;
+}
+
+a.button_request{
+    text-decoration: none;
+    color: #245383;
+}
+
+/**** CONTENT HEADER ****/
+#image_header{
+    height: 322px;
+    position: relative;
+    z-index: 0;
+}
+#title_header{
+    font-size: 34px;
+    color:#fff;
+    padding-left: 34px;
+    margin-top: -78px;
+    background-image: url('../image/background_image_internal.png');
+    height: 48px;
+    position: relative;
+    z-index: 1;
+    padding-top: 30px;
+}    
+
+/***** CONTENT ****/
+
+
+.node > .content{
+    width: 952px;
+    margin: 0px auto;
+    padding-bottom: 20px;
+    padding-top: 20px;
+}
+
+/***** Directors ****/
+
+.table-directors td{
+    vertical-align: top;
+    padding-top: 38px;
+    width: 476px;
+}
+
+.table-directors .field-director-picture{
+    float: left;
+    margin-right: 22px;
+    height: 100px;
+}
+.table-directors .field-director-picture .field-content{
+    height: 100px;
+}
+.table-directors .field-director-name a{
+    font-family: 'allerbold';
+    color: #235383;
+    font-size: 16px;
+    text-decoration: none;
+}
+.table-directors .field-director-title a{
+    font-style: italic;
+    color: #235383;
+    font-size: 16px;
+    text-decoration: none;
+}
+.table-directors .field-director-description{
+    text-align: justify;
+}
+.table-directors td{
+    padding-right: 0px;
+    padding-left: 13px;
+}
+.table-directors td.odd {
+    padding-right: 12px;
+    padding-left: 0px;
+}
+.table-directors .field-director-readmore a{
+    font-family: 'allerbold';
+    color: #235383;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+
+.node-directors-item .field-name-field-director-picture{
+    float: left;
+    margin-right: 15px;
+}
+
+/**** MEMBERSHIP DIRECTORY *****/
+.view-membership-directory, .view-all-membership-directory{
+    padding-bottom: 25px;
+    width: 952px;
+    margin: 0px auto;
+}
+.view-membership-directory table, .view-all-membership-directory table{
+    width: 100%;
+}
+.view-membership-directory th, .view-all-membership-directory th{
+    border: none;
+    text-align: left;
+    color: #235383;
+    font-size: 18px;
+    padding-bottom: 8px;
+}
+tbody{
+    border-bottom:none;
+    border-color: transparent;
+    border-spacing: 0px;
+}
+.view-membership-directory td, .view-all-membership-directory td{
+    background: none;
+    border: none;
+    padding-bottom: 5px;
+    padding-right: 30px;
+}
+tr.even, tr.odd{
+    border: none;
+    background: none;
+}
+.title_blue_one{
+    color: #235383;
+    font-size: 34px;
+    text-decoration: none;
+}
+.node-type-directors-item .title_blue_one{
+    padding-left: 0;
+}
+
+.view-membership-directory .title_blue_one, .view-all-membership-directory .title_blue_one{
+    margin-bottom: 30px;
+}
+.title_blue_two{
+    color: #235383;
+    font-size: 30px;
+    font-style: italic;
+}
+.view-membership-directory .title_blue_two, .view-all-membership-directory .title_blue_two{
+    margin-top: 26px;
+    margin-bottom: 26px;
+}
+#edit-submit-membership-directory, #edit-submit-all-membership-directory, .button_profile_action,.button_event_action, #user-register-form #edit-submit, .event-webform #edit-submit--3, .event-webform #edit-submit--4, .event-webform #edit-submit--2,#edit-reset{
+    background: #235383;
+    height: 30px;
+    color: #fff;
+    font-family: 'allerbold';
+    text-transform: capitalize;
+    font-size: 18px;
+    text-align: center;
+    padding-bottom: 7px;
+    line-height: 10px;
+    border: none;
+    margin-top: 18px;
+    border-radius: 5px;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+.button_profile_action{
+    height: 22px;
+    text-decoration: none;
+    display: block;
+    float: left;
+    padding-top: 2px;
+    line-height: 20px;
+    margin-left: 16px;
+    margin-top: 14px;
+    clear: both;
+}
+
+.view-membership-directory .views-exposed-form label, .view-all-membership-directory .views-exposed-form label{
+    font-weight: normal;
+}
+.view-membership-directory a, .view-all-membership-directory a{
+    text-decoration: none;
+}
+.view-membership-directory .views-field-mail a{
+    color: #6c6963;
+}
+.view-membership-directory .view-filters, .view-all-membership-directory .view-filters{
+    margin-bottom: 24px;
+    border-bottom: 1px solid #BFCFDF;
+    padding-bottom: 15px;
+}
+.view-all-membership-directory .views-field-edit-node{
+    padding-right: 0px;
+}
+
+.view-all-membership-directory .views-field-view-user,.view-membership-directory .views-field-view-user{
+    width: 160px;
+}
+.view-all-membership-directory .views-field-field-office-telephone,.view-membership-directory .views-field-field-office-telephone{
+    width: 156px;
+}
+.item-list .pager li{
+    padding:4px;
+    font-size: 16px;
+    margin: 0px;
+}
+
+.item-list .pager li.pager-current{
+    color: #235383;
+    text-decoration: underline;
+}
+
+
+/***** UBERCART *****/
+.cart-review{
+    width: 100%;
+}
+#customer-pane{
+    display: none;
+}
+/***** BUTTONS *****/
+
+#edit-submit, #edit-continue, #edit-cancel, #edit-back, #edit-submit--2, #edit-submit--3{
+    border: solid 1px #194068;
+    background: url('../image/button_login.fw.png') repeat-x;
+    height: 25px;
+    padding-left: 10px;
+    padding-right: 10px;
+    text-transform: uppercase;
+    font-family: 'allerbold';
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.page-cart #block-user-login,
+.page-cart .text_login{
+    display: none;
+}
+
+/***** HEADER RIGHT SPECIAL PAGES ********/
+
+.page-user-register #header_right .text_login, .page-user-password #header_right .text_login, .page-user-reset #header_right .text_login, .page-user #header_right .text_login{
+    display: none;
+}
+
+#user-login .text_login{
+    font-family: 'allerregular';
+    color: #6c6963;
+
+    margin: 0px 0px 10px 0px;
+    width: 100%;
+}
+
+/**** PASSWORD *****/
+
+#user-pass .form-item-name{
+    margin-bottom: 20px;
+}
+
+/***** INTERNAL PAGE *****/
+
+.node > .content.short{
+    float: left;
+    width: 661px;
+    margin-left: 35px;
+}
+
+.node-internal-page #events_widget{
+    margin-top:9px;
+    margin-left: 40px;
+}
+
+/***** EVENT *****/
+
+#title_event{
+    /*width: 912px;*/
+    margin: 0px auto 25px auto;
+}
+#header_event{
+    background-color: #F3F1EB;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    float: left;
+    width: 100%;
+    font-family: 'allerbold';
+}
+#header_event img{
+    float: left;
+    margin-right: 30px;
+}
+#date_event, #location_event{
+    font-size: 18px;
+    color:#235383;
+    line-height: 24px;
+}
+#is_open_text_event{
+    line-height: 24px;
+}
+#short_description_event a, #body_event a, .view-eventes.view-display-id-page .views-field-field-short-description a{
+    color:#235383;;
+}
+#short_description_event{
+    font-family: 'allerregular';
+}
+#short_description_event{
+
+    color: #235383;
+}
+.blue_link_underline a{
+    text-decoration: underline;
+}
+#content_header_event,#body_event{
+    width: 912px;
+    margin: 0px auto;
+}
+#body_event{
+    padding-top: 19px;
+}
+.node-event{
+    padding-bottom: 25px;
+    padding-top: 25px;
+}
+.node-event > .content{
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    float: left;
+}
+.button_event_action{
+    text-decoration: none; 
+    padding-bottom: 4px;
+    height: 24px;
+    line-height: 20px;
+    float: left;
+}
+.view-eventes.view-display-id-page a.button_event_action{
+    color:#fff;
+    float: inherit;
+    line-height: 40px;
+}
+.view-eventes.view-display-id-page .views-field-views-conditional{
+    margin-top: 7px;
+}
+#short_description_event{
+    margin-top: 10px;
+}
+.view-eventes.view-display-id-page .views-row{
+    float: left;
+    width: 931px;
+    padding: 20px 25px;
+    height: 204px;
+}
+.view-eventes.view-display-id-page .views-row-odd{
+    background-color: #F3F1EB;
+}
+
+.view-eventes.view-display-id-page .views-field-field-imagen-event{
+    float: left;
+    margin-right: 18px;
+    height: 190px;
+    width: 202px;
+}
+.views-field-field-imagen-event .field-content{
+    height: 148px;
+    width: 202px;
+}
+.view-eventes.view-display-id-page .views-field-title{
+    margin-top: -8px;
+}
+.view-eventes.view-display-id-page .views-field-title a{
+    font-family: 'allerbold';
+    color:#235383;   
+    line-height: 24px;
+    text-decoration: none;
+    font-size: 18px;
+}
+.view-eventes.view-display-id-page .views-field-field-date,.view-eventes.view-display-id-page .views-field-field-event-location{
+    line-height: 24px;
+    font-size: 18px;
+    font-family: 'allerbold';
+}
+.view-eventes.view-display-id-page .views-field-views-conditional-1 a{
+    font-family: 'allerbold';
+    font-size: 14px;
+    color:#235383;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+.view-eventes.view-display-id-page .views-field-views-conditional-1{
+    padding-top: 12px;
+}
+.view-eventes.view-display-id-page a{
+    text-decoration: none;
+    color: #6c6963;
+}
+
+.title_blue_one{
+    /*padding-left: 22px;*/
+    padding-top: 25px;
+}
+
+.page-events .title_blue_one{
+    padding-left: 22px;
+}
+
+
+.page-event-registration #title_event{
+    padding-left: 34px;
+}
+
+.node-type-internal-page .title_blue_one{
+    padding-left: 13px;
+}
+
+.view-eventes.view-display-id-page .title_blue_one{
+    margin-bottom: 32px;
+}
+
+.view-eventes.view-display-id-block td{
+    width: 454px;
+}
+/****** EVENT REGISTRATION FORM ****/
+.event-webform{
+    width: 912px;
+    margin: 0px auto 25px auto;
+}
+.event-webform .description{
+    font-size: 14px;
+    width: 568px;
+}
+.event-webform label{
+    padding-left: 2px;
+    margin-top: 5px;
+}
+.event-webform .form-text{
+    width: 240px;
+}
+.event-webform .webform-component-radios,
+.event-webform #webform-component-enter-pediatrics{
+    margin-top:  32px;
+    margin-bottom: 35px;
+}
+.event-webform .form-item.form-type-radio{
+    display: inline-block;
+}
+.event-webform #webform-component-select-membership-type .form-item.form-type-radio{
+    display: block;
+
+}
+.event-webform #webform-component-select-membership-type{
+    margin-bottom: 35px;
+}
+.event-webform #webform-component-please-complete{
+    font-family: 'allerbold';
+}
+
+.page-node-done .links{
+    display: none;
+}
+
+.webform-component-hidden{
+    display: none;
+}
+
+/**** MEMBER TOOLKIT LANDINGPAGE *****/
+
+
+.table-member-toolkit td{
+    vertical-align: top;
+    padding-top: 38px;
+    width: 476px;
+}
+
+.table-member-toolkit .field-member-toolkit-title a{
+    color: #235383;
+    font-size: 18px;
+    text-decoration: none;
+    font-family: 'allerbold';
+}
+.table-member-toolkit .field-member-toolkit-description{
+    text-align: justify;
+}
+.table-member-toolkit td{
+    padding-right: 0px;
+    padding-left: 13px;
+}
+.table-member-toolkit td.odd {
+    padding-right: 12px;
+    padding-left: 0px;
+}
+.table-member-toolkit .field-member-toolkit-readmore a{
+    font-family: 'allerbold';
+    color: #235383;
+    font-size: 12px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.field-member-toolkit-picture{
+    margin-bottom: 15px;
+}
+
+
+/*
+* CUSTOM CART STYLES
+*/
+
+#review-instructions p{
+    font-family: "allerbold";
+    color: #235383;
+    text-decoration: none;
+}
+
+
+/**** VIEWS ADMINISTER *****/
+
+.view-administers .views-table{
+    width: 100%;
+}
+
+.view-administers td.views-field.views-field-title{
+    width: 341px;
+}
+
+.view-administers td.views-field{
+    width: 160px;
+}
+
+/*
+* BASIC PAGE
+*/
+
+.node-page .region-content{
+    padding: 0;
+    width: 976px;
+}
+
+#search-block-form{
+    display: none;
+}
+
+.page-node-107 .title_blue_one,
+.page-node-118 .title_blue_one{
+    display: none; 
+}
+
+/*
+* MEMBERS ADMIN VIEW
+*/
+
+.view-id-all_membership_directory #edit-field-city-value-wrapper{
+    width: 238px;
+    clear: both;
+}
+
+.view-id-all_membership_directory #edit-field-type-of-member-value-wrapper{
+    clear: both;
+}
+
+.view-id-all_membership_directory .views-submit-button{
+    clear:left;
+}
+
+/**** INVOICES *****/
+#view-invoices{
+    padding-bottom: 25px;
+    width: 952px;
+    margin: 0px auto;
+}
+#view-invoices table{
+    width: 100%;
+}
+#view-invoices th{
+    border: none;
+    text-align: left;
+    color: #235383;
+    font-size: 18px;
+    padding-bottom: 8px;
+}
+#view-invoices tbody{
+    border-bottom:none;
+    border-color: transparent;
+    border-spacing: 0px;
+}
+#view-invoices td{
+    background: none;
+    border: none;
+    padding-bottom: 5px;
+    padding-right: 30px;
+}
+#view-invoices tr.even, #view-invoices tr.odd{
+    border: none;
+    background: none;
+}
+
+#view-invoice-detail label{
+    display: inline-block;
+}
+#view-invoice-detail .content_item{
+    display: inline-block;
+    line-height: 27px;
+}
+
+/**** webform ***/
+.webform-client-form .form-item, 
+.webform-client-form .form-actions {
+    margin-bottom: 15px;
+}
+
+
+/* mass email*/
+#aaap-mass-form #edit-message-format, #aaap-mass-form .wysiwyg-toggle-wrapper{
+    display: none;
+}
+
+#aaap-mass-form .form-item, #aaap-mass-form #edit-attach{
+    margin-bottom: 20px;
+}
+
+.page-mass-email #content .content{
+    width: 500px;
+}
+
+
+.page-mass-email .title_blue_one{
+    padding-bottom: 25px;
+    padding-top: 0;
+}
+
+#aaap-mass-form{
+    padding-top: 20px;
+
+}

@@ -1,0 +1,285 @@
+<?php
+
+require_once DRUPAL_ROOT.'/sites/all/modules/config/config.php';
+require_once DRUPAL_ROOT.'/includes/database/database.inc';
+require_once DRUPAL_ROOT.'/sites/all/libraries/phpmailer/class.phpmailer.php';
+
+
+define('WEBFORM_EMAIL_FIELD_ID','7');
+define('WEBFORM_CONFIRMED_FIELD_ID','14');
+
+//Become a Sponsor
+define('BECOME_SPONSOR_FORM_ID','139');
+define('BECOME_SPONSOR_PRODUCT','263');
+define('BECOME_SPONSOR_PAYMENT_FIELD_ID','13');
+define('BECOME_SPONSOR_EMAIL_FIELD_ID','7');
+define('BECOME_SPONSOR_CONFIRMED_FIELD_ID','14');
+
+//Post a Job
+define('POST_JOB_FORM_ID','138');
+define('POST_JOB_PRODUCT','262');
+define('POST_JOB_PAYMENT_FIELD_ID','9');
+define('POST_JOB_EMAIL_FIELD_ID','4');
+define('POST_JOB_CONFIRMED_FIELD_ID','11');
+
+function get_sponsorship_price($type_sponsorship){
+    switch ($type_sponsorship) {
+        case 'platinum':
+            return PLATINUM;
+            break;
+        case 'gold':
+            return GOLD;
+            break;
+        case 'silver':
+            return SILVER;
+            break;
+        case 'bronze':
+            return BRONZE;
+            break;
+    }
+}
+
+function aaap_extra_webform_submission_insert($node, $submission) {
+
+    //dsm($submission);
+
+    //SPONSORSHIP
+if($submission->nid == BECOME_SPONSOR_FORM_ID) {
+    $sponsorship_fee = get_sponsorship_price($submission->data[10][0]);
+
+    insert_invoice(array(
+        'uid'=> $submission->uid,
+        'order_total' => sprintf("%.2f", $sponsorship_fee),
+        'item_id' => $submission->nid,
+        'key_id' => $submission->sid,
+        'order_status' => 'pending',
+        'payment_method' => $submission->data[13][0],
+        'primary_email' => $submission->data[BECOME_SPONSOR_EMAIL_FIELD_ID][0],
+        'additional_price' => NULL,
+        'additional_amount' => NULL,
+        'billing_first_name' => $submission->data[1][0],
+        'billing_last_name' =>  $submission->data[2][0],
+        'billing_company' => $submission->data[8][0],
+        'billing_street1' => $submission->data[3][0],
+        'billing_street2' => NULL,
+        'billing_city' => $submission->data[4][0],
+        'billing_zone' => $submission->data[5][0],
+        'billing_postal_code' => $submission->data[6][0]));
+
+
+    if ($submission->data[BECOME_SPONSOR_PAYMENT_FIELD_ID][0] == 'credit_card') {
+        uc_cart_empty(uc_cart_get_id());
+        $nodo = node_load(BECOME_SPONSOR_PRODUCT);
+        $nodo->sell_price = $sponsorship_fee;
+
+        node_save($nodo);
+        $data = array('atributes' => array('sid' => $submission->sid));
+        uc_cart_add_item(BECOME_SPONSOR_PRODUCT, $qty = 1, $data, $cid = NULL, $msg = TRUE, $check_redirect = TRUE, $rebuild = TRUE);
+
+        drupal_goto('cart/checkout');
+
+
+    } elseif ($submission->data[BECOME_SPONSOR_PAYMENT_FIELD_ID][0] == 'mail_check') {
+
+        include(DRUPAL_ROOT . '/sites/all/modules/config/sponsorship_payment_instructions.php');
+
+        global $base_root;
+        mail(ADMIN_MAIL, SITE_NAME . ' Sponsorship Payment Received', 'A sponsorship has signed up for a ' . $node->title . '. Click here to see the registration information: ' . $base_root . '/node/' . $node->nid . '/submission/' . $submission->sid . '/edit' . "\r\n \r\n"
+            . 'Thank you,' . "\r\n"
+            . SITE_NAME, HEADERS);
+    }
+}
+        //  POST JOB
+    if($submission->nid == POST_JOB_FORM_ID) {
+        $post_job_product = node_load(POST_JOB_PRODUCT);
+        $post_job_fee = $post_job_product->sell_price;
+
+        insert_invoice(array(
+            'uid'=> $submission->uid,
+            'order_total' => sprintf("%.2f", $post_job_fee),
+            'item_id' => $submission->nid,
+            'key_id' => $submission->sid,
+            'order_status' => 'pending',
+            'payment_method' => $submission->data[9][0],
+            'primary_email' => $submission->data[POST_JOB_EMAIL_FIELD_ID][0],
+            'additional_price' => NULL,
+            'additional_amount' => NULL,
+            'billing_first_name' => $submission->data[3][0],
+            'billing_last_name' =>  $submission->data[10][0],
+            'billing_company' => $submission->data[2][0],
+            'billing_street1' => NULL,
+            'billing_street2' => NULL,
+            'billing_city' => NULL,
+            'billing_zone' => NULL,
+            'billing_postal_code' => NULL));
+
+
+        if ($submission->data[POST_JOB_PAYMENT_FIELD_ID][0] == 'credit_card') {
+            uc_cart_empty(uc_cart_get_id());
+            $data = array('atributes' => array('sid' => $submission->sid));
+            uc_cart_add_item(POST_JOB_PRODUCT, $qty = 1, $data, $cid = NULL, $msg = TRUE, $check_redirect = TRUE, $rebuild = TRUE);
+
+            drupal_goto('cart/checkout');
+
+        } elseif ($submission->data[POST_JOB_PAYMENT_FIELD_ID][0] == 'mail_check') {
+
+
+            include(DRUPAL_ROOT . '/sites/all/modules/config/postjob_payment_instructions.php');
+
+            global $base_root;
+            mail(ADMIN_MAIL, SITE_NAME . ' Job Posting Payment Received', 'Click here to see the registration information: ' . $base_root . '/node/' . $node->nid . '/submission/' . $submission->sid . '/edit' . "\r\n \r\n"
+                . 'Thank you,' . "\r\n"
+                . SITE_NAME, HEADERS);
+
+        }
+    }
+}
+
+function aaap_extra_webform_submission_presave($node, &$submission) {
+
+    if(!empty($submission->sid)){
+        $submission_after = webform_get_submissions(array('nid' => $submission->nid, 'sid' => $submission->sid));
+
+        global $base_root;
+        //dsm($submission);
+        //dsm($node);
+        if($submission_after[$submission->sid]->data[BECOME_SPONSOR_CONFIRMED_FIELD_ID][0] == 'not-confirmed'
+            and $submission->data[BECOME_SPONSOR_CONFIRMED_FIELD_ID][0]=='confirmed'
+            and $submission->data[BECOME_SPONSOR_PAYMENT_FIELD_ID][0]== 'mail_check' and $node->nid == BECOME_SPONSOR_FORM_ID){
+
+            $sponsorship_fee = get_sponsorship_price($submission->data[10][0]);
+            set_status_invoice($submission->sid,$submission->nid,'completed');
+
+
+            mail($submission->data[BECOME_SPONSOR_EMAIL_FIELD_ID][0],SITE_NAME.' Sponsorship Payment Received' ,
+                'Payment for your sponsorship has been received.'."\r\n"
+                .'Sponsorship Payment Receipt'. "\r\n"
+                .'Payment Type: Check'. "\r\n \r\n"
+                .'Order: Sponsorship'. "\r\n"
+                .'Fee: $'.sprintf("%.2f",$sponsorship_fee)."\r\n  \r\n"
+                .'Name: '.$submission->data[1][0]." ".$submission->data[2][0]. "\r\n"
+                .'Institution: '.$submission->data[8][0]. "\r\n"
+                .'Email: '.$submission->data[BECOME_SPONSOR_EMAIL_FIELD_ID][0]. "\r\n"
+                .'Address: '.$submission->data[3][0]. "\r\n"
+                .'City: '.$submission->data[4][0]. "\r\n"
+                .'State/Province: '.$submission->data[5][0]. "\r\n"
+                .'Zip/Postal Code: '.$submission->data[6][0]. "\r\n \r\n"
+                .'Thank you,'. "\r\n \r\n"
+                .SITE_NAME, HEADERS);
+
+
+
+        }elseif($submission_after[$submission->sid]->data[POST_JOB_CONFIRMED_FIELD_ID][0] == 'not-confirmed'
+            and $submission->data[POST_JOB_CONFIRMED_FIELD_ID][0]=='confirmed'
+            and $submission->data[POST_JOB_PAYMENT_FIELD_ID][0]== 'mail_check' and $node->nid == POST_JOB_FORM_ID){
+
+            set_status_invoice($submission->sid,$submission->nid,'completed');
+
+            $post_job_product = node_load(POST_JOB_PRODUCT);
+            $post_job_price = $post_job_product->sell_price;
+            mail($submission->data[POST_JOB_EMAIL_FIELD_ID][0],SITE_NAME.' Job Posting Payment Received' ,
+                'Payment for your Job Posting has been received.'."\r\n \r\n"
+                .'Your job will be posted within 2 business days and will remain in our site for 60 days. '."\r\n \r\n"
+                .'Job Posting Receipt'. "\r\n"
+                .'Payment Type: Check'. "\r\n \r\n"
+                .'Order: Job Posting'. "\r\n"
+                .'Fee: $'.sprintf("%.2f",$post_job_price)."\r\n  \r\n"
+                .'Name: '.$submission->data[3][0]." ".$submission->data[10][0]. "\r\n"
+                .'Institution: '.$submission->data[2][0]. "\r\n"
+                .'Email: '.$submission->data[POST_JOB_EMAIL_FIELD_ID][0]. "\r\n  \r\n"
+                .'Thank you,'. "\r\n \r\n"
+                .SITE_NAME, HEADERS);
+
+        }
+    }
+}
+
+function aaap_extra_uc_checkout_complete($order, $account) {
+
+    global $base_root;
+    $product_purchased = _aaap_product_purchased($order);
+
+    $products = array_values($order->products);
+    $sid = $products[0]->data['atributes']['sid'];
+
+   // dsm($order);
+    //dsm($products);
+    if($product_purchased->nid == BECOME_SPONSOR_PRODUCT){
+
+        $submission = _confirm_submission_webform(BECOME_SPONSOR_FORM_ID,$sid,BECOME_SPONSOR_CONFIRMED_FIELD_ID);
+
+        set_status_invoice($sid,BECOME_SPONSOR_FORM_ID,'completed');
+        //dsm($submission);
+        mail(ADMIN_MAIL, SITE_NAME.' Sponsorship Payment Received' ,'Click here to see the registration information: '.$base_root.'/node/'.BECOME_SPONSOR_FORM_ID.'/submission/'.$submission->sid.'/edit'. "\r\n \r\n"
+            ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."\r\n \r\n"
+            .'Thank you,'. "\r\n"
+            .SITE_NAME, HEADERS);
+
+
+        mail($order->primary_email,SITE_NAME.' Sponsorship Payment Received' ,
+            'Thank you for supporting '.SITE_NAME.' with a sponsorship. Sponsorship Payment Receipt'."\r\n"
+            .'Payment Type: Credit card'. "\r\n \r\n"
+            .'Order: Sponsorship'. "\r\n"
+            .'Fee: $'.sprintf("%.2f",$product_purchased->sell_price)."\r\n" //TODO: HARDCODED-- OBTAIN FROM ACTUAL PRODUCT PRICE OR ORDER TOTAL
+            .'Name: '.$submission->data[1][0]." ".$submission->data[2][0]. "\r\n"
+            .'Institution: '.$submission->data[8][0]. "\r\n"
+            .'Email: '.$submission->data[BECOME_SPONSOR_EMAIL_FIELD_ID][0]. "\r\n"
+            .'Address: '.$submission->data[3][0]. "\r\n"
+            .'City: '.$submission->data[4][0]. "\r\n"
+            .'State/Province: '.$submission->data[5][0]. "\r\n"
+            .'Zip/Postal Code: '.$submission->data[6][0]. "\r\n \r\n"
+            .'Thank you,'. "\r\n \r\n"
+            .SITE_NAME, HEADERS);
+
+    }elseif($product_purchased->nid == POST_JOB_PRODUCT){
+
+        $submission = _confirm_submission_webform(POST_JOB_FORM_ID,$sid,POST_JOB_CONFIRMED_FIELD_ID);
+        set_status_invoice($sid,POST_JOB_FORM_ID,'completed');
+        //dsm($submission);
+        mail(ADMIN_MAIL, SITE_NAME.' Job Posting Payment Received' ,'Click here to see the registration information: '.$base_root.'/node/'.POST_JOB_FORM_ID.'/submission/'.$submission->sid.'/edit'. "\r\n \r\n"
+            ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."\r\n \r\n"
+            .'Thank you,'. "\r\n"
+            .SITE_NAME, HEADERS);
+
+        mail($order->primary_email,'Thank You for Your Job Posting' ,
+            "Thank you for submitting a Job Posting. It will be posted within 2 business days of receiving it and will remain in ".SITE_NAME."'s site for 60 days."."\r\n"
+            .'Job Posting Payment Receipt'. "\r\n"
+            .'Payment Type: Credit card'. "\r\n \r\n"
+            .'Order: Job Posting'. "\r\n"
+            .'Fee: $'.sprintf("%.2f",$product_purchased->sell_price)."\r\n" //TODO: HARDCODED-- OBTAIN FROM ACTUAL PRODUCT PRICE OR ORDER TOTAL
+            .'Name: '.$submission->data[3][0]." ".$submission->data[10][0]. "\r\n"
+            .'Institution: '.$submission->data[2][0]. "\r\n"
+            .'Email: '.$submission->data[POST_JOB_EMAIL_FIELD_ID][0]. "\r\n \r\n"
+            .'Thank you,'. "\r\n \r\n"
+            .SITE_NAME, HEADERS);
+
+    }
+}
+
+function aaap_extra_form_alter(&$form, &$form_state, $form_id){
+    global $user;
+    if(!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)){
+        //HIDE CONFIRMED FIELD TO NORMAL USERS
+
+        $form['submitted']['confirmed']['#type'] = 'hidden';
+
+    }
+
+    if($form_id == 'uc_cart_checkout_form'){
+        $order = uc_order_load(intval($_SESSION['cart_order']));
+        $product_purchased = _aaap_product_purchased($order);
+        $products = array_values($order->products);
+        $sid = $products[0]->data['atributes']['sid'];
+
+       if($product_purchased->nid == BECOME_SPONSOR_PRODUCT){
+
+            $submission = webform_get_submission(BECOME_SPONSOR_FORM_ID,$sid);
+            $form['panes']['customer']['primary_email']['#value'] = $submission->data[BECOME_SPONSOR_EMAIL_FIELD_ID][0];
+
+        }elseif($product_purchased->nid == POST_JOB_PRODUCT){
+
+            $submission = webform_get_submission(POST_JOB_FORM_ID,$sid);
+            $form['panes']['customer']['primary_email']['#value'] = $submission->data[POST_JOB_EMAIL_FIELD_ID][0];
+        }
+    }
+}

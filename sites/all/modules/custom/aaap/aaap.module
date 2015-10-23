@@ -1,0 +1,1188 @@
+<?php
+
+
+
+require_once DRUPAL_ROOT . '/sites/all/modules/config/config.php';
+require_once DRUPAL_ROOT . '/includes/database/database.inc';
+
+
+function aaap_preprocess_html(&$variables)
+{
+
+    drupal_add_js(drupal_get_path('module', 'aaap') . '/aaap_module.js', array('group' => JS_THEME));
+}
+
+
+function aaap_rendered_profile()
+{
+    if (arg(0) == 'user' && is_numeric(arg(1)))
+        return user_load(arg(1));
+}
+
+function aaap_current_node()
+{
+    if (arg(0) == 'node' && is_numeric(arg(1)))
+        return node_load(arg(1));
+
+    if (arg(0) == 'event' && is_numeric(arg(1)))
+        return node_load(arg(1));
+}
+
+function aaap_menu_alter(&$items)
+{
+
+
+    //Chain Menu Access Module
+    chain_menu_access_chain($items, MEMBERSHIP_DIRECTORY_PATH, '_access_helper', array(MEMBERSHIP_DIRECTORY_PATH));
+
+
+}
+
+
+//To Protect Access to Non-Node pages (like Views)
+//For Nodes use aaap_node_access
+function _access_helper($path)
+{
+
+    global $user;
+
+
+    switch ($path) {
+
+        case MEMBERSHIP_DIRECTORY_PATH:
+        case MASS_EMAIL_PATH:
+            if(array_key_exists(ACTIVE, $user->roles) || array_key_exists(SUPER, $user->roles) || array_key_exists(ADMINISTRATOR, $user->roles) ) {
+                return true;
+            } else {
+                return false;
+            }
+            break;
+
+        default:
+            return false;
+            break;
+
+    }
+
+    return false;
+}
+
+//To prevent View Access to certain content types
+//CTs: member-toolkit, member-toolkit-landing-page
+function aaap_node_access($node, $op, $account)
+{
+
+    global $user;
+
+    // just in case the $node parameter is not really a node object or
+    // the $node->type is one other than the ones we are interested
+    $type = is_string($node) ? $node : $node->type;
+    if (!is_object($node) || $op != 'view' || !isset($node->field_protect_page['und'][0]['value']) || $node->field_protect_page['und'][0]['value'] === '0') {
+        return NODE_ACCESS_IGNORE;
+    }
+
+    if (array_key_exists(ACTIVE, $user->roles) || array_key_exists(SUPER, $user->roles) || array_key_exists(ADMINISTRATOR, $user->roles)) {
+
+        return NODE_ACCESS_ALLOW;
+    }
+
+    // Protect Member Resources Page
+    if (isset($node->field_protect_page['und'][0]['value']) && $node->field_protect_page['und'][0]['value'] === '1') {
+
+        return NODE_ACCESS_DENY;
+    }
+
+    // if none of the conditions above are met we will deny access
+    return NODE_ACCESS_DENY;
+}
+
+function aaap_menu()
+{
+
+    $items['request-to/%/%'] = array(
+        'page callback' => 'request_to',
+        'page arguments' => array(1, 2),
+        'access callback' => TRUE
+    );
+    $items['onetime-login/%'] = array(
+        'page callback' => 'onetime_login',
+        'page arguments' => array(1),
+        'access callback' => TRUE
+    );
+    $items['welcome/%'] = array(
+        'page callback' => '_welcome_email',
+        'page arguments' => array(1),
+        'access callback' => TRUE
+    );
+    $items['send-mass-email'] = array(
+        'page callback' => 'send_mass_email',
+        'access callback' => TRUE
+    );
+    $items['change_admin_callback'] = array(
+        'page callback' => 'change_admin_callback',
+        'access callback' => TRUE
+    );
+    $items['invoices'] = array(
+        'page callback' => 'get_invoices',
+        'access callback' => TRUE,
+        'title callback' => t('Invoice'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['invoices/%'] = array(
+        'page callback' => 'get_invoice',
+        'page arguments' => array(1),
+        'access callback' => TRUE,
+    );
+    $items['cancel-order'] = array(
+        'page callback' => 'cancel_order_redirect',
+        'page arguments' => array(1),
+        'access callback' => TRUE,
+    );
+
+    return $items;
+}
+
+function change_admin_callback()
+{
+
+    variable_set('site_mail', ADMIN_MAIL);
+
+}
+
+/*
+function send_mass_email()
+{
+    global $user;
+    $count = 0;
+
+    if ($user->uid == 1) {//only accesible by admin
+
+        $query = "SELECT u.uid, u.pass, u.login, u.mail FROM users u";
+        $result = db_query($query);
+
+        foreach ($result as $member) {
+//            $user = user_load($uid->uid);
+            if ($member->mail != '') {
+                print $member->uid . "  ---  " . $member->mail . "</br>";
+                onetime_login($member->uid, $member->pass, $member->login, $member->mail);//FUNCTION CHANGED
+                $count++;
+            }
+        }
+
+        print "active users:" . $count;
+
+    }
+
+}
+*/
+
+
+function onetime_login($uid)
+{
+
+    global $base_root;
+    $user = user_load($uid);
+    $onetime = aaap_user_pass_reset_url($uid, null, null);
+
+    /*aaap_mail($mail, SITE_NAME . ' One-time Login for password reset', 'We are delighted to announce that the website for ' . SITE_NAME . ' is now live [' . $base_root . ']. While this website will still be in beta mode, you will be able to access information about our organization, its members, and planned educational meetings.  This site will help members to network with each other through a more robust member directory and search functionality and facilitate the meeting registration process, as well as share and showcase relevant tools and information to benefit members.
+
+Please login and update your ' . SITE_NAME . ' profile as soon as feasible.  This is really important in order to ensure the site has your most up-to-date information for registration, payment, and directory searches.
+
+Thank you very much for your ongoing support of ' . SITE_NAME . '. One-Time Login ' . $onetime, HEADERS);*/
+
+    aaap_mail($user->mail, SITE_NAME . ' One-time Login for password reset', 'Please use the following link to reset your password' . SITE_NAME . '. One-Time Login ' . $onetime, HEADERS);
+
+
+}
+
+function aaap_user_pass_reset_url($uid, $pass = null, $login = null)
+{
+    $timestamp = REQUEST_TIME;
+
+    if ($pass == null) {
+        $user = user_load($uid);
+        $pass = $user->pass;
+        $login = $user->login;
+    }
+
+    return url("user/reset/$uid/$timestamp/" . user_pass_rehash($pass, $timestamp, $login), array('absolute' => TRUE));
+}
+
+
+function request_to($request, $uid)
+{
+    $user_r = user_load($uid);
+    global $base_root;
+    // dpm($user_r);
+    if ($user_r->field_type_of_member['und'][0]['value'] == 'regular' and array_key_exists(ACTIVE, $user_r->roles)) {
+        aaap_mail(ADMIN_MAIL, SITE_NAME . ' Change of Status Request Received', 'A member has requested a change of status. Click here to review details ' . $base_root . '/user/' . $uid, HEADERS);
+        aaap_mail($user_r->mail, SITE_NAME . ' Change of Status Request Received', 'Your request to change your membership status has been received. This request will be reviewed and confirmation sent once approved. ', HEADERS);
+        $edit = array('field_type_of_member' => array('und' => array(0 => array('value' => 'pending_' . $request))));
+        user_save($user_r, $edit);
+        drupal_set_message('Your request to become ' . $request . ' member is pending to be approved', 'status');
+    } else {
+        drupal_set_message('Your request to become ' . $request . ' member cannot be processed. Please contact the site administrator at ' . ADMIN_MAIL, 'status');
+    }
+    drupal_goto('/user/' . $uid);
+}
+
+
+
+function aaap_globals($arg)
+{
+
+    switch ($arg) {
+
+        case 'membership-directory-path':
+            return MEMBERSHIP_DIRECTORY_PATH;
+            break;
+
+        case 'member-toolkit-path':
+            return MEMBER_TOOLKIT_PATH;
+            break;
+
+    }
+
+    return 0;
+
+}
+
+
+function aaap_form_alter(&$form, &$form_state, $form_id)
+{
+    global $user;
+    //dsm($form);
+
+
+    // Don't alter the normal profile edit form, but only the password reset form.
+    if ((arg(0) == 'user' && arg(1) == 'reset' && !user_is_logged_in()) || isset($_GET['pass-reset-token'])) {
+
+
+        // Our submit handler will log the use in after form submit.
+//        $form['#submit'][] = 'simple_pass_reset_pass_reset_submit';
+
+        /*$form['actions']['submit']['#value'] = t('Save and log in as !username', array(
+            '!username' => format_username($form['#user']),
+        ));*/
+
+
+        // Some third-party modules (like bakery) might hide account elements.
+//        if (!isset($form['account']['#access']) || $form['account']['#access']) {
+        // Require a new password.
+        $form['account']['pass']['#required'] = TRUE;
+
+        if (!isset($_GET['pass-reset-token'])) {
+            $form['actions']['submit']['#value'] = 'Set up your new password';
+        }
+//        dsm($form);
+
+
+        if (true || arg(5) == 'brief') {
+            drupal_set_title(t('Reset password'));
+            // The user is most interested in getting a working password, don't show their picture, timezone, etc.
+            foreach (element_children($form) as $key) {
+                if (@isset($form[$key]['#type']) && in_array($form[$key]['#type'], array('hidden', 'actions'))) {
+                    // Do not alter these elements.
+                } else {
+                    // Hide other elements.
+                    $form[$key]['#access'] = FALSE;
+                }
+            }
+            // Except don't hide these.
+            $form['account']['#access'] = TRUE;
+            $form['actions']['#access'] = TRUE;
+
+            // But seriously do hide these.
+            $form['account']['mail']['#access'] = FALSE;
+        }
+//        }
+
+        // This is to avoid a PHP Notice in user_profile_form_submit().
+        if (!isset($_SESSION)) {
+            $_SESSION = array();
+        }
+    }
+
+
+    if ($form_id == 'user_register_form' or $form_id == 'user_profile_form') {
+         $form['#attributes']['autocomplete'] = 'off';
+
+//        add question above checkbox
+        $form['field_attach']['#prefix'] = '<div class="form-item headin-form-item question-field-attach" style="margin-bottom: 0;padding-bottom: 0;"><label>Are you the head administrator of your department? </label></div>';
+
+        //change the description of the picture field
+        //$form['picture']['picture_upload']['#description']='Pictures larger than 1024x1024 pixels will be scaled down.<br/>Make sure to save your profile after uploading or deleting your picture to keep the changes.';
+//        dsm($form);
+
+        $form['account']['name']['#access'] = FALSE;
+        $form['account']['status']['#access'] = FALSE;
+        $form['account']['notify']['#access'] = FALSE;
+
+        /* to now when the user is edited by the form or ubertcart */
+        $form['field_created_by']['und'][0]['value']['#default_value'] = 'user_form';
+        $form['field_created_by']['#access'] = FALSE;
+
+//        if(!isset($_GET['pass-reset-token'])){
+//            $form['account']['pass']['#access'] = FALSE;
+//        }
+//        dsm($form);
+
+//       if(!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)){
+        array_unshift($form['#validate'], 'changed_value');
+//       }
+        //Remove 'N/A' option from fields with options (radio buttons)
+        $fields = field_info_instances("user", "user");
+        $field_names = array_keys($fields);
+
+        foreach ($field_names as $field_name) {
+
+            if (isset($form[$field_name]['und']['#type'])) {
+                if ($form[$field_name]['und']['#type'] == 'radios' || $form[$field_name]['und']['#type'] == 'select') {
+                    unset($form[$field_name]['und']['#options']['_none']);
+                }
+            }
+        }//end foreach
+//        dsm($form);
+        //Make the role field unique in user form
+        $form['account']['roles']['#title'] = 'Membership Roles & Status';
+
+        if (!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)) {
+            //$form['field_letter_attachment']['#disabled']= TRUE;
+            $form['field_type_of_member']['#access'] = FALSE;
+
+            $form['field_became_aaap_member']['#access'] = FALSE;
+            $form['field_renewal_date']['#access'] = FALSE;
+
+
+        }
+
+        array_unshift($form['#validate'], 'profile_validate');
+
+        unset($form['#metatags']);
+        unset($form['redirect']);
+    }//end if
+
+    if ($form_id == 'user_register_form') {
+
+        dsm($form);
+
+        if (!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)) {
+            $form['field_new_or_renewal']['#prefix'] = '<div class="custom_legend">MEMBERSHIP INFORMATION</div>';
+            $form['#prefix'] = '<div class="heading_title">Become a Member</div><div class="heading_text">Please complete the form below to become a member of ' . SITE_NAME . '.</div>';
+            array_unshift($form['#validate'], 'register_validate');
+            $form['actions']['submit']['#value'] = 'Submit';
+            //dsm($form);
+
+
+        }
+
+        if (!isset($_GET['pass-reset-token'])) {
+            $form['account']['pass']['#access'] = FALSE;
+        }
+
+        //hiding annoying fields to admins
+        if (array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles)) {
+
+            $form['field_enter_pediatrics']['#access'] = FALSE;
+
+        }
+
+    }
+    if ($form_id == 'user_profile_form') {
+
+        //remove validations and required for ADMINs
+//        if(array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles)){
+////            dsm($form);
+////            dsm($field_names);
+////            $form['#validate'] = array();
+//            foreach($field_names as $field_name){
+//                $form[$field_name]['und']['#required'] = '0';
+//            }
+//        }
+        if (!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles) and $user->uid != 1) {
+            $form['account']['pass']['#title'] = 'Change your password';
+        }
+
+        // we hide fields for users with role "Pending Payment"
+        //TODO: REFACTOR
+        if (!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles) and array_key_exists(PENDING_PAYMENT, $user->roles)) {
+            foreach ($field_names as $field_name) {
+                $form[$field_name]['#access'] = FALSE;
+                $form['account']['mail']['#access'] = FALSE;
+                $form['picture']['#access'] = FALSE;
+                $form['field_picture']['#access'] = FALSE;
+                $form['#attributes'] = array('class' => array('just_password'));
+            }
+        }//end foreach
+        $form['actions']['cancel']['#value'] = "Delete Member";
+        $form['field_enter_pediatrics']['#access'] = FALSE;
+        $form['field_choose_payment_method']['#access'] = FALSE;
+
+    }
+
+    if ($form_id == 'user_login') {
+        $form['pass']['#suffix'] = '<a href="/user/password" class="text_login">Forgot password?</a>';
+    }
+
+
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ * Remove the current password field from the user_profile_form form (user/%/edit).
+ */
+function aaap_form_user_profile_form_alter(&$form, &$form_state)
+{
+    global $user;
+
+    // searches the #validate array for the current_pass validation function, and removes it
+    $key = array_search('user_validate_current_pass', $form['#validate']);
+    if ($key !== FALSE) {
+        unset($form['#validate'][$key]);
+    }
+    // hide the current password fields
+    $form['account']['current_pass_required_value']['#access'] = FALSE;
+    $form['account']['current_pass']['#access'] = FALSE;
+
+
+}
+
+function changed_value($form, &$form_state)
+{
+    $form_state['values']['name'] = $form_state['values']['mail'];
+}
+
+
+function register_validate($form, &$form_state)
+{
+
+
+    //  validate if "Pediatrics" was not entered in the "Enter 'Pediatrics:'" field
+    if ($form_state['values']['field_enter_pediatrics']['und'][0]['value'] !== CAPTCHA) {
+        form_set_error('field_enter_pediatrics', 'You have to enter the text "' . CAPTCHA . '"');
+    }
+
+    //  validate if "Pediatrics" was not entered in the "Enter 'Pediatrics:'" field
+    if ($form_state['values']['field_choose_payment_method']['und'][0]['value'] === 'none') {
+        form_set_error('field_choose_payment_method', 'You have to specify the payment method of your preference');
+    }
+
+    if ($form_state['values']['field_state']['und'][0]['value'] === 'none') {
+        form_set_error('field_state', 'You have to specify a State/Province');
+    }
+
+}
+
+
+function profile_validate($form, &$form_state)
+{
+
+    // if entered, validate if "Office Telephone" has the correct format xxx-xxx-xxxx
+    $off_phone = $form_state['values']['field_office_telephone']['und'][0]['value'];
+    if ($off_phone !== '' && !preg_match("/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/", $off_phone)) {
+        form_set_error('field_office_telephone', 'You have to specify your office telephone number in the xxx-xxx-xxxx format');
+    }
+
+    // if entered, validate if "Mobile Telephone" has the correct format xxx-xxx-xxxx
+    $mob_phone = $form_state['values']['field_mobile_telephone']['und'][0]['value'];
+    if ($mob_phone !== '' && !preg_match("/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/", $mob_phone)) {
+        form_set_error('field_mobile_telephone', 'You have to specify your ' . ALT_NUMBER . ' telephone number in the xxx-xxx-xxxx format');
+    }
+
+}
+
+function aaap_user_insert(&$edit, $account, $category)
+{
+
+
+    if ($account->field_created_by['und'][0]['value'] == 'user_form') {
+        global $base_root;
+        global $user;
+        //dsm($account);
+        $user_url = $base_root . '/user/' . $account->uid . '/edit';
+
+        aaap_mail($account->mail, SITE_NAME . ' Membership Application Received', 'Your membership application has been received. Once your application is approved, you will receive an email requesting payment.', HEADERS);
+
+
+        if (!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)) {
+
+            aaap_mail(ADMIN_MAIL, SITE_NAME . ' Membership Application Received', 'A membership application has been received. Click here to review the application ' . $user_url, HEADERS);
+
+
+            //these are the cases where the admin creates the users.  5 = role user active, 3 role user administrator. ?? -- added line 611 instad that actually bypasses this for ADMINS
+            if (!array_key_exists(ACTIVE, $account->roles) and !array_key_exists(SUPER, $account->roles)) {
+                custom_add_role_to_user($account->uid, 'Pending Approval');
+
+                /*if($account->field_choose_payment_method_['und'][0]['value']=='mail_check'){
+                    drupal_goto(SUCCESS_PAGE_CHECK_PAYMENT);//redirect to the check payment
+                }*/
+            }
+
+            drupal_goto(SUCCESS_PAGE_APPLY_MEMBERSHIP);//redirect to the check payment
+
+        }
+    }
+}
+
+function aaap_user_presave(&$edit, $account, $category)
+{
+
+
+    if (isset($edit['roles'])) {
+
+        $config_data = get_cms_config();
+        $user_data = user_load($account->uid);
+        // if user role user change from Pending Approval (rid = 6) to Pending Payment (rid = 4)
+        if (array_key_exists(PENDING_PAYMENT, $edit['roles']) and $edit['roles'][PENDING_PAYMENT] == PENDING_PAYMENT and array_key_exists(PENDING_APROVAL, $account->roles) and !array_key_exists(PENDING_PAYMENT, $account->roles)) {
+            $edit['status'] = 1;
+            //drupal_set_message("User has been succesfully activated");
+
+            //if($edit['field_choose_payment_method']['und'][0]['value']=='credit_card'){
+            $onetime = user_pass_reset_url($account);
+
+            include(DRUPAL_ROOT . '/sites/all/modules/config/membership_aplication_aproved.php');
+
+            // }
+
+        }
+
+
+        if (array_key_exists(ACTIVE, $edit['roles']) and $edit['roles'][ACTIVE] == ACTIVE and array_key_exists(PENDING_PAYMENT, $account->roles)) {
+
+
+            insert_invoice(array(
+                'uid' => $account->uid,
+                'order_total' => sprintf("%.2f", $config_data['registration_fee']),
+                'item_id' => PRODUCT_MEMBERSHIP_ID,
+                'key_id' => 1,
+                'order_status' => 'completed',
+                'payment_method' => 'mail_check',
+                'primary_email' => $user_data->mail,
+                'additional_price' => NULL,
+                'additional_amount' => NULL,
+                'billing_first_name' => $user_data->field_first_name['und'][0]['value'],
+                'billing_last_name' => $user_data->field_last_name['und'][0]['value'],
+                'billing_company' => $user_data->field_institution['und'][0]['value'],
+                'billing_street1' => $user_data->field_address_line_1['und'][0]['value'],
+                'billing_street2' => $user_data->field_address_line_2['und'][0]['value'],
+                'billing_city' => $user_data->field_city['und'][0]['value'],
+                'billing_zone' => $user_data->field_state['und'][0]['value'],
+                'billing_postal_code' => $user_data->field_zip['und'][0]['value']));
+
+            $edit['field_became_aaap_member'] = array('und' => array(0 => array('value' => date('Y'))));
+
+        }
+
+
+        // if admin changed membership type after a request from user
+        if (isset($account->field_type_of_member) && ($account->field_type_of_member['und'][0]['value'] == 'pending_adjunct' || $account->field_type_of_member['und'][0]['value'] == 'pending_emeritus') && ($edit['field_type_of_member']['und'][0]['value'] == 'adjunct' || $edit['field_type_of_member']['und'][0]['value'] == 'emeritus')) {
+
+            drupal_set_message("Membership Type has been changed");
+            if ($edit['field_type_of_member']['und'][0]['value'] == 'adjunct') {
+
+                aaap_mail($edit['mail'], SITE_NAME . ' Change of Status Request Approved', 'Your change of membership status has been approved. ', HEADERS);
+            }
+            if ($edit['field_type_of_member']['und'][0]['value'] == 'emeritus') {
+                aaap_mail($edit['mail'], SITE_NAME . ' Change of Status Request Approved', 'Your change of membership status has been approved. ', HEADERS);
+
+
+            }
+
+        }
+
+        //block all access to INACTIVE users
+        if (array_key_exists(INACTIVE, $edit['roles']) and $edit['roles'][INACTIVE] == INACTIVE) {
+            $edit['status'] = 0;
+            drupal_set_message("User has been deactivated.");
+        }
+
+    }
+}
+
+
+function aaap_user_update(&$edit, $account, $category)
+{
+
+    global $base_root;
+    $membership_node = node_load(PRODUCT_MEMBERSHIP_ID);
+    $config_data = get_cms_config();
+
+    //'4' = Payment Pending
+    if (array_key_exists(PENDING_PAYMENT, $account->roles) and array_key_exists(PENDING_PAYMENT, $account->original->roles)) {
+        //-> Empties a cart of its contents.
+        uc_cart_empty(uc_cart_get_id());
+        uc_cart_add_item(PRODUCT_MEMBERSHIP_ID, $qty = 1, $data = NULL, $cid = NULL, $msg = TRUE, $check_redirect = TRUE, $rebuild = TRUE);
+        drupal_get_messages('status', $clear_queue = TRUE);
+        drupal_set_message('Your password has been updated. Now you can pay the Membership.');
+        drupal_goto('cart/checkout');
+    }
+
+    //drupal_set_message('user updated');
+
+    if (array_key_exists(ACTIVE, $account->roles) and !array_key_exists(ACTIVE, $account->original->roles) and !array_key_exists(EXPIRED, $account->original->roles)) {
+//        dsm($account);
+//            $onetime = user_pass_reset_url($account);
+        $onetime = aaap_user_pass_reset_url($account->uid);
+        if ($account->field_choose_payment_method['und'][0]['value'] == 'credit_card') {
+            aaap_mail($account->mail, SITE_NAME . ' Welcomes you!', 'Congratulations! Your ' . SITE_NAME . ' Membership has been activated. You are now able to login using the credentials you specified during the application process by clicking this link: ' . $base_root . '/user/login.' . "\r\n \r\n"
+                . 'If you forgot your password, click here to reset it: ' . $onetime . "\r\n"
+                . 'Thank you,' . "\r\n"
+                . SITE_NAME, HEADERS);
+        } else {
+            aaap_mail($account->mail, SITE_NAME . ' Welcomes you!', 'Congratulations! Your ' . SITE_NAME . ' Membership has been activated. The last step is to set your password using this link: ' . $onetime . "\r\n \r\n"
+                . 'Thank you,' . "\r\n"
+                . SITE_NAME, HEADERS);
+            $user_data = user_load($account->uid);
+
+            aaap_mail($account->mail, SITE_NAME . ' Membership: Notification of Payment Received',
+                'Thank you for your ' . SITE_NAME . ' Membership Renewal' . "\r\n"
+                . 'Registration Receipt' . "\r\n"
+                . 'Payment Type: Check' . "\r\n"
+                . 'Order: ' . "\r\n \r\n"
+                . $membership_node->title . "\r\n"
+                . 'Registration Fee $' . $config_data['registration_fee'] . "\r\n"
+                . 'Name: ' . $user_data->field_first_name['und'][0]['value'] . " " . $user_data->field_last_name['und'][0]['value'] . "\r\n"
+                . 'Institution: ' . $user_data->field_institution['und'][0]['value'] . "\r\n"
+                . 'Email: ' . $user_data->mail . "\r\n"
+                . 'Address Line 1: ' . $user_data->field_address_line_1['und'][0]['value'] . "\r\n"
+                . 'Address Line 2: ' . $user_data->field_address_line_2['und'][0]['value'] . "\r\n"
+                . 'City: ' . $user_data->field_city['und'][0]['value'] . "\r\n"
+                . 'State/Province: ' . $user_data->field_state['und'][0]['value'] . "\r\n"
+                . 'Zip/Postal Code: ' . $user_data->field_zip['und'][0]['value'] . "\r\n \r\n"
+                . 'Thank you,' . "\r\n \r\n"
+                . SITE_NAME, HEADERS);
+
+
+        }
+
+
+    }
+
+
+}
+
+
+function aaap_mail($to, $subject, $message, $headers){
+
+    //$mail_system = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
+
+    if (true) {//($mail_system == 'TestingMailSystem')
+        $test_mail = array();
+        $test_mail['to'] = $to;
+        $test_mail['subject'] = $subject;
+        $test_mail['body'] = $message;
+        $test_mail['headers'] = $headers;
+        $current_messages = variable_get('drupal_test_email_collector', array());
+        $current_messages[] = $test_mail;
+
+        variable_set('drupal_test_email_collector', $current_messages);
+
+    }
+
+    mail($to, $subject, $message, $headers);
+
+}
+
+function _is_admin()
+{
+    global $user;
+
+    if (array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles) || $user->uid == 1) {
+        return true;
+    }
+
+    return false;
+}
+
+
+function _welcome_email($uid)
+{
+
+    if (_is_admin()) {
+        global $base_root;
+        $account = user_load($uid);
+        $onetime = aaap_user_pass_reset_url($account->uid);
+
+        aaap_mail($account->mail, SITE_NAME . ' Welcomes you!', 'Congratulations! Your ' . SITE_NAME . ' Membership has been activated. You are now able to login using the credentials you specified during the application process by clicking this link: ' . $base_root . '/user/login.' . "\r\n \r\n"
+            . 'If you forgot your password, click here to reset it: ' . $onetime . "\r\n"
+            . 'Thank you,' . "\r\n"
+            . SITE_NAME, HEADERS);
+
+        drupal_set_message("Welcome email sent to: " . $account->mail);
+    }
+    drupal_goto(drupal_get_path_alias('user/' . $account->uid));
+}
+
+/**
+ * Add a role to a user.
+ *
+ * @param $user
+ *   User object or user ID.
+ * @param $role_name
+ *   String value of role to be added.
+ *
+ * @see http_://drupal.org/node/28379#comment-4277052
+ * @see http_://api.drupal.org/api/drupal/modules--user--user.module/function/user_save
+ */
+function custom_add_role_to_user($user, $role_name, $start_membership = false)
+{
+    // For convenience, we'll allow user ids as well as full user objects.
+    if (is_numeric($user)) {
+        $user = user_load($user);
+    }
+    // If the user doesn't already have the role, add the role to that user.
+    $key = array_search($role_name, $user->roles);
+    if ($key == FALSE) {
+        // Get the rid from the roles table.
+        $roles = user_roles(TRUE);
+        $rid = array_search($role_name, $roles);
+        if ($rid != FALSE) {
+            $new_role[$rid] = $role_name;
+
+            if ($role_name == 'Active Member' && $start_membership) {
+
+                $edit = array(
+                    'field_became_aaap_member' => array(
+                        'und' => array(
+                            0 => array('value' => date('Y')),
+                        ),
+                    ),
+                    'roles' => $new_role
+                );
+                user_save($user, $edit);
+
+            } else {
+                user_save($user, array('roles' => $new_role));
+            }
+        }
+    }
+}
+
+
+//returns the product being bought
+//either product:node->13 (Membership) or event:node/% (Event Registration)
+function _aaap_product_purchased($order)
+{
+
+
+    $products = array_values($order->products);
+    $product_purchased = node_load($products[0]->nid);
+
+    return $product_purchased;
+}
+
+
+function aaap_uc_checkout_complete($order, $account)
+{
+
+    global $base_root;
+    $product_purchased = _aaap_product_purchased($order);
+
+    if ($product_purchased->nid == PRODUCT_MEMBERSHIP_ID) {
+        $config_data = get_cms_config();
+        $user_data = user_load($account->uid);
+
+        insert_invoice(array(
+            'uid' => $account->uid,
+            'order_total' => sprintf("%.2f", $config_data['registration_fee']),
+            'item_id' => PRODUCT_MEMBERSHIP_ID,
+            'key_id' => 1,
+            'order_status' => 'completed',
+            'payment_method' => 'credit_card',
+            'primary_email' => $user_data->mail,
+            'additional_price' => NULL,
+            'additional_amount' => NULL,
+            'billing_first_name' => $user_data->field_first_name['und'][0]['value'],
+            'billing_last_name' => $user_data->field_last_name['und'][0]['value'],
+            'billing_company' => $user_data->field_institution['und'][0]['value'],
+            'billing_street1' => $user_data->field_address_line_1['und'][0]['value'],
+            'billing_street2' => $user_data->field_address_line_2['und'][0]['value'],
+            'billing_city' => $user_data->field_city['und'][0]['value'],
+            'billing_zone' => $user_data->field_state['und'][0]['value'],
+            'billing_postal_code' => $user_data->field_zip['und'][0]['value']));
+
+        custom_add_role_to_user($account->uid, 'Active Member', true);
+
+        aaap_mail(ADMIN_MAIL, 'A new ' . SITE_NAME . ' Membership has been activated!', 'A new ' . SITE_NAME . ' member has completed payment.' . "\r\n"
+            .'Go here to see the member\'s profile. ' . $base_root . '/user/' . $account->uid. "\r\n \r\n"
+            ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."\r\n \r\n"
+            .'Thank you,'. "\r\n"
+            .SITE_NAME, HEADERS);
+
+
+        aaap_mail($order->primary_email, SITE_NAME . ' Membership: Notification of Payment Received',
+            'Thank you for your ' . SITE_NAME . ' Membership Registration' . "\r\n"
+            . 'Registration Receipt' . "\r\n"
+            . 'Payment Type: Credit card' . "\r\n"
+            . 'Order: ' . "\r\n \r\n"
+            . $product_purchased->title . "\r\n"
+            . 'Registration Fee $' . $config_data['registration_fee'] . "\r\n" //TODO: HARDCODED-- OBTAIN FROM ACTUAL PRODUCT PRICE OR ORDER TOTAL
+//            .'------------------------------------------------'. "\r\n"
+//            .'------------------------------------------------'. "\r\n"
+//            .'Grand Total'."\r\n"
+//            .'$'.$order->uc_price. "\r\n \r\n"
+            . 'Name: ' . $user_data->field_first_name['und'][0]['value'] . " " . $user_data->field_last_name['und'][0]['value'] . "\r\n"
+            . 'Institution: ' . $user_data->field_institution['und'][0]['value'] . "\r\n"
+            . 'Email: ' . $user_data->mail . "\r\n"
+            . 'Address Line 1: ' . $user_data->field_address_line_1['und'][0]['value'] . "\r\n"
+            . 'Address Line 2: ' . $user_data->field_address_line_2['und'][0]['value'] . "\r\n"
+            . 'City: ' . $user_data->field_city['und'][0]['value'] . "\r\n"
+            . 'State/Province: ' . $user_data->field_state['und'][0]['value'] . "\r\n"
+            . 'Zip/Postal Code: ' . $user_data->field_zip['und'][0]['value'] . "\r\n \r\n"
+            . 'Thank you,' . "\r\n \r\n"
+            . SITE_NAME, HEADERS);
+
+    }
+
+}
+
+
+function aaap_access_private_profile($admin = TRUE)
+{
+    global $user;
+
+    if ($admin && (array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles))) {
+        return true;
+    }
+
+    $profile = aaap_rendered_profile();
+
+    //REFACTOR: SHOULD BE ACTIVE MEMBER
+    if ($profile->uid == $user->uid && (_ap_is_active_member() || (array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles)))){
+
+        return true;
+    }
+
+    return false;
+
+}
+
+//$admin = true then admins should be considered as active members
+function _ap_is_active_member($admin = false)
+{
+    global $user;
+
+    if (array_key_exists(ACTIVE, $user->roles)) {
+        return true;
+    }
+
+    if ($admin && (array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles))) {
+        return true;
+    }
+
+    return false;
+}
+
+
+function aaap_mail_alter(&$message)
+{
+    $message['from'] = $message['headers']['From'] = SITE_NAME . ' (' . SYSTEM_MAIL . ')';
+}
+
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function aaap_element_info_alter(&$types)
+{
+
+    if (isset($types['password_confirm']['#process']) && (($position = array_search('user_form_process_password_confirm', $types['password_confirm']['#process'])) !== FALSE)) {
+        unset($types['password_confirm']['#process'][$position]);
+    }
+}
+
+
+function aaap_print_helper($user_profile, $field_name)
+{
+
+    $output = "";
+
+    switch ($field_name) {
+
+        //print all the organizations member checked, separated by comma.
+        case 'field_others_organizations':
+
+            if (!empty($user_profile['field_others_organizations'])) {
+                $num_orgs = sizeof($user_profile['field_others_organizations']['#items']);
+                $other = false;
+
+                for ($i = 0; $i < $num_orgs; $i++) {
+                    if ($user_profile['field_others_organizations'][$i]['#markup'] != 'Other') {
+                        $output .= $user_profile['field_others_organizations'][$i]['#markup'];
+                    } else {
+                        $other = true;
+                    }
+                    if ($i < $num_orgs - 1) {
+                        $output .= ", ";
+                    }
+                }
+
+                //if member filled the 'other' field, print it as well
+                if (!empty($user_profile['field_other_organization'])) {
+                    //if 'other' option was not checked, need to print an additional comma
+                    if (!$other) {
+                        $output .= ", ";
+                    }
+
+                    $output .= $user_profile['field_other_organization'][0]['#markup'];
+                }
+
+                //if 'other' option was checked but no text was added, just print 'Other' (¬ ¬)
+                if ($other && empty($user_profile['field_other_organization'])) {
+                    $output .= "Other";
+                }
+
+            }
+
+            break;
+
+        case 'field_head_admin_info':
+
+            if (!empty($user_profile['field_head_admin_info']['#items'])) {
+                $entity = entity_load('field_collection_item', array($user_profile['field_head_admin_info']['#items'][0]['value']));
+                $data_array = array_values($entity);
+                $values = array_values($data_array);
+                $data = $values[0];
+
+
+                if ($data->field_name_head_admin['und'][0]['value'] != '') {
+                    $output .= $data->field_name_head_admin['und'][0]['value'];
+                }
+                if ($data->field_title_head_admin['und'][0]['value'] != '') {
+                    $output .= " (" . $data->field_title_head_admin['und'][0]['value'] . ")";
+                }
+
+            }
+
+            break;
+
+        case 'field_to_whom_do_you_report':
+
+            if (!empty($user_profile['field_to_whom_do_you_report']['#items'])) {
+                $whom_entity = entity_load('field_collection_item', array($user_profile['field_to_whom_do_you_report']['#items'][0]['value']));
+                $whom_data_array = array_values($whom_entity);
+                $values = array_values($whom_data_array);
+                $whom_data = $values[0];
+
+                if ($whom_data->field_name_report['und'][0]['value'] != '') {
+                    $output .= $whom_data->field_name_report['und'][0]['value'];
+                }
+                if ($whom_data->field_title_report['und'][0]['value'] != '') {
+                    $output .= " (" . $whom_data->field_title_report['und'][0]['value'] . ")";
+                }
+
+            }
+
+            break;
+
+        case 'field_renewal_date':
+            //dsm($user_profile);
+            $date = substr($user_profile->field_renewal_date['und'][0]['value'], 0, 10);
+            //$date_obj =
+            $output .= date("m-d-Y", strtotime($date));
+            //$output .= substr($user_profile->field_renewal_date['und'][0]['value'],0,10);
+            break;
+
+    }
+
+    return $output;
+
+}
+
+function aaap_user_login(&$edit, $account)
+{
+
+    drupal_set_message('You have logged in successfully');
+
+}
+
+function get_cms_config()
+{
+    //Load the reminder renewal dates
+    $node_config = node_load(RENEWAL_CONFIG);
+    $config_data['node_config'] = $node_config;
+    $config_data['renewal_start_date'] = strtotime($node_config->field_renewal_period['und'][0]['value']);
+    $config_data['renewal_end_date'] = strtotime($node_config->field_renewal_period['und'][0]['value2']);
+    $config_data['now'] = strtotime('now');
+    $config_data['amount_adjunct_member_init'] = $node_config->field_amount_adjunct_member_init['und'][0]['value'];
+    $config_data['amount_emeritus_member_init'] = $node_config->field_amount_emeritus_membr_init['und'][0]['value'];
+    $config_data['amount_regular_member_init'] = $node_config->field_amount_regular_member_init['und'][0]['value'];
+    $config_data['registration_fee'] = $node_config->field_membership_registration_fe['und'][0]['value'];
+
+    return $config_data;
+}
+
+function aaap_node_update($node)
+{
+
+
+    if ($node->nid == RENEWAL_CONFIG) {
+        //dsm($node);
+        $membership_node = node_load(PRODUCT_MEMBERSHIP_ID);
+        //dsm($membership_node);
+        $membership_node->sell_price = $node->field_membership_registration_fe['und'][0]['value'];
+        node_save($membership_node);
+
+    }
+}
+
+
+/******* Redirect - Cancel Order Ubertcart*******/
+
+function cancel_order_redirect(){
+
+    $order = uc_order_load(intval($_SESSION['cart_order']));
+    $product_purchased = _aaap_product_purchased($order);
+
+    //dsm($product_purchased);
+
+    if($product_purchased->type == PRODUCT_EVENT_TYPE){
+        drupal_goto('/event/'.$product_purchased->nid.'/registration');
+    }elseif($product_purchased->nid == PRODUCT_MEMBERSHIP_ID){
+        drupal_goto('/');
+    }elseif($product_purchased->nid == PRODUCT_MEMBERSHIP_RENEWAL_ID){
+        drupal_goto('/membership');
+    }elseif($product_purchased->nid == BECOME_SPONSOR_PRODUCT){
+        drupal_goto('/become-sponsor');
+    }elseif($product_purchased->nid == POST_JOB_PRODUCT){
+        drupal_goto('/post-job');
+    }
+}
+
+
+/**** INVOICES *****/
+
+function get_orders_by_user_id($user, $order_id = NULL, $order_status = 'completed')
+{
+
+    $orders = array();
+
+    if ($order_id) {
+        $add_where = 'AND order_id=' . $order_id;
+    }
+
+    $result = db_query('SELECT modified,item_id,order_id,payment_method,additional_price,additional_amount,order_total,billing_first_name,billing_last_name,billing_company,primary_email,billing_street1,billing_street2,billing_city,billing_zone,billing_postal_code FROM {aaap_check_invoices} WHERE uid = :uid ' . $add_where . ' AND order_status = :order_status ORDER BY order_id DESC', array(':uid' => $user->uid, ':order_status' => $order_status));
+
+
+    foreach ($result as $record) {
+
+        $product = node_load($record->item_id);
+
+        $order['order_id'] = $record->order_id;
+        $order['date'] = date("d M Y", $record->modified);
+        $order['total_order'] = sprintf("%.2f", $record->order_total);
+        $order['additional_price'] = $record->additional_price;
+        $order['additional_amount'] = $record->additional_amount;
+        $order['item'] = $product->title;
+        $order['payment_method'] = $record->payment_method;
+        $order['billing_first_name'] = $record->billing_first_name;
+        $order['billing_last_name'] = $record->billing_last_name;
+        $order['billing_company'] = $record->billing_company;
+        $order['primary_email'] = $record->primary_email;
+        $order['billing_street1'] = $record->billing_street1;
+        $order['billing_street2'] = $record->billing_street2;
+        $order['billing_city'] = $record->billing_city;
+        $order['billing_zone'] = $record->billing_zone;
+        $order['billing_postal_code'] = $record->billing_postal_code;
+
+
+        $orders[$record->order_id] = $order;
+    }
+    //dsm($orders);
+    return $orders;
+
+}
+
+function get_invoices()
+{
+    global $user;
+    $orders = get_orders_by_user_id($user);
+
+    $page_callback_result = "<div id='view-invoices'><table><thead><tr><th>Date</td><th>Product</th><th>Total</th></tr></thead><tbody>";
+    foreach ($orders as $order) {
+        $guest = $order['additional_price'] * $order['additional_amount'];
+        $total = $order['total_order'] + $guest;
+
+        $page_callback_result .= "<tr>";
+        $page_callback_result .= "<td><a href='/invoices/" . $order['order_id'] . "'>" . $order['date'] . "</a></td>";
+        $page_callback_result .= "<td>" . $order['item'] . "</td>";
+        $page_callback_result .= "<td>$ " . $total . "</td>";
+        $page_callback_result .= "</tr>";
+
+    }
+    $page_callback_result .= "</body></table></div>";
+    return $page_callback_result;
+}
+
+function get_invoice($order_id)
+{
+
+    global $user;
+    $orders = get_orders_by_user_id($user, $order_id);
+    $order = $orders[$order_id];
+
+    $page_callback_result = '<div id="view-invoice-detail">'
+        . '<div class="item"><label>' . SITE_NAME . ' Member Receipt </label></div><br />'
+        . '<div class="item"><label>Date: </label> <div class="content_item">' . $order['date'] . "</div></div>"
+        . '<div class="item"><label>Payment Type: </label> <div class="content_item">' . get_payment_method_string($order['payment_method']) . "</div></div>"
+        . '<div class="item"><label>' . $order['item'] . " </label></div>";
+
+    if (!empty($order['additional_price']) and !empty($order['additional_amount'])) {
+        $guest = $order['additional_price'] * $order['additional_amount'];
+        $total = $order['total_order'] + $guest;
+        $page_callback_result .= '<div class="item"><label>Guest: </label> <div class="content_item">$' . sprintf("%.2f",$order['additional_price']) . "</div></div>";
+        $page_callback_result .= '<div class="item"><label>Number of Guest: </label> <div class="content_item">' . $order['additional_amount'] . "</div></div>";
+        $page_callback_result .= '<div class="item"><label>Total Guest: </label> <div class="content_item">$' . sprintf("%.2f",$guest) . "</div></div>";
+    }
+
+
+    $page_callback_result .= '<div class="item"><label>Registration Fee: </label> <div class="content_item">$' . $order['total_order'] . "</div></div>";
+
+    if (!empty($order['additional_price']) and !empty($order['additional_amount'])) {
+
+        $page_callback_result .= '<div class="item"><label>Grand total: </label> <div class="content_item">$' . $total . '</div></div>';
+    }
+
+    $page_callback_result .= '<div class="item"><label>Name: </label> <div class="content_item">' . $order['billing_first_name'] . " " . $order['billing_last_name'] . "</div></div>"
+        . '<div class="item"><label>Institution: </label> <div class="content_item">' . $order['billing_company'] . "</div></div>"
+        . '<div class="item"><label>Email: </label> <div class="content_item">' . $order['primary_email'] . "</div></div>";
+
+    if (!empty($order['billing_street1'])) {
+        $page_callback_result .= '<div class="item"><label>Address Line 1: </label> <div class="content_item">' . $order['billing_street1'] . "</div></div>";
+    }
+    if (!empty($order['billing_street2'])) {
+        $page_callback_result .= '<div class="item"><label>Address Line 2: </label> <div class="content_item">' . $order['billing_street2'] . "</div></div>";
+    }
+    if (!empty($order['billing_city'])) {
+        $page_callback_result .= '<div class="item"><label>City: </label> <div class="content_item">' . $order['billing_city'] . "</div></div>";
+    }
+    if (!empty($order['billing_zone'])) {
+        $page_callback_result .= '<div class="item"><label>State/Province: </label> <div class="content_item">' . $order['billing_zone'] . "</div></div>";
+    }
+    if (!empty($order['billing_postal_code'])) {
+        $page_callback_result .= '<div class="item"><label>Zip/Postal Code: </label> <div class="content_item">' . $order['billing_postal_code'] . "</div></div>";
+    }
+
+    $page_callback_result .= '</div>';
+
+    return $page_callback_result;
+}
+
+
+function insert_invoice($data)
+{
+
+    $data['created'] = strtotime('now');
+    $data['modified'] = strtotime('now');
+//dsm($data);
+    $last_insert_id = db_insert('aaap_check_invoices')->fields($data)->execute();
+    return $last_insert_id;
+}
+
+
+function set_status_invoice($key_id, $item_id, $new_status = 'completed')
+{
+    //dsm($key_id);
+    //dsm($item_id);
+    db_update('aaap_check_invoices')->fields(array('order_status' => $new_status, 'modified' => strtotime('now')))->condition('key_id', $key_id, '=')->condition('item_id', $item_id, '=')->execute();;
+}

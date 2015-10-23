@@ -1,0 +1,564 @@
+<?php
+
+require_once DRUPAL_ROOT.'/sites/all/modules/config/config.php';
+require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
+
+
+function aaap_renewals_menu(){
+
+    $items['renewal_send_reminder_emails_callback'] = array(
+        'page callback' => 'renewal_send_reminder_emails_callback',
+        'access callback' => TRUE
+    );
+    $items['renewal-membership'] = array(
+        'page callback' => 'renewal_membership_link_login_callback',
+        'access callback' => TRUE
+    );
+    $items['renewal_period_ends_callback'] = array(
+        'page callback' => 'renewal_period_ends_callback',
+        'access callback' => TRUE
+    );
+    $items['renewal-testing'] = array(
+        'page callback' => '_renewal_testing',
+        'access callback' => TRUE,
+        'access arguments' => array('Administer content'),
+    );
+    $items['init-queue/%'] = array(
+        'page callback' => 'initQueue',
+        'page arguments' => array(1),
+        'access callback' => TRUE,
+    );
+    $items['process-queue/%'] = array(
+        'page callback' => 'processQueue',
+        'page arguments' => array(1),
+        'access callback' => TRUE,
+    );
+
+    return $items;
+}
+
+function aaap_renewals_uc_checkout_complete($order, $account) {
+
+
+    global $base_root;
+    global $user;
+    $product_purchased = _aaap_product_purchased($order);
+
+    if($product_purchased->nid == PRODUCT_MEMBERSHIP_RENEWAL_ID){
+
+        $account->field_renewal_date['und'][0]['value'] = date("Y-m-d H:i",strtotime('now'));
+        if(array_key_exists(EXPIRED, $user->roles)){
+            custom_add_role_to_user($account->uid, 'Active Member');
+        }
+        user_save($account);
+
+         $user_data = user_load($account->uid);
+
+       mail(ADMIN_MAIL,'An '.SITE_NAME.' Membership has been renewed!' ,'A renewed '.SITE_NAME.' member has completed payment.'."\r\n"
+           .'Go here to see the member\'s profile. '.$base_root.'/user/'.$account->uid."\r\n \r\n"
+           ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."\r\n \r\n"
+           .'Thank you,'. "\r\n"
+           .SITE_NAME, HEADERS);
+
+        mail($order->primary_email,SITE_NAME.' Membership: Notification of Payment Received' ,
+            'Thank you for your '.SITE_NAME.' Membership Renewal'."\r\n"
+            .'Registration Receipt'. "\r\n"
+            .'Payment Type: Credit card'. "\r\n"
+            .'Order: '."\r\n \r\n"
+            .$product_purchased->title. "\r\n"
+            .'Registration Fee $'.sprintf("%.2f",$product_purchased->price)."\r\n"
+            .'Name: '.$user_data->field_first_name['und'][0]['value']." ".$user_data->field_last_name['und'][0]['value']. "\r\n"
+            .'Institution: '.$user_data->field_institution['und'][0]['value']. "\r\n"
+            .'Email: '.$user_data->mail. "\r\n"
+            .'Address: '.$user_data->field_address_line_1['und'][0]['value']. "\r\n"
+            .'Address 1: '.$user_data->field_address_line_2['und'][0]['value']. "\r\n"
+            .'City: '.$user_data->field_city['und'][0]['value']. "\r\n"
+            .'State/Province: '.$user_data->field_state['und'][0]['value']. "\r\n"
+            .'Zip/Postal Code: '.$user_data->field_zip['und'][0]['value']. "\r\n \r\n"
+            .'Thank you,'. "\r\n \r\n"
+            .SITE_NAME, HEADERS);
+
+        insert_invoice(array(
+            'uid'=> $account->uid,
+            'order_total' => sprintf("%.2f", $product_purchased->price),
+            'item_id' => PRODUCT_MEMBERSHIP_RENEWAL_ID,
+            'key_id' => 1,
+            'order_status' => 'completed',
+            'payment_method' => 'credit_card',
+            'primary_email' => $user_data->mail,
+            'additional_price' => NULL,
+            'additional_amount' => NULL,
+            'billing_first_name' => $user_data->field_first_name['und'][0]['value'],
+            'billing_last_name' =>  $user_data->field_last_name['und'][0]['value'],
+            'billing_company' => $user_data->field_institution['und'][0]['value'],
+            'billing_street1' => $user_data->field_address_line_1['und'][0]['value'],
+            'billing_street2' => $user_data->field_address_line_2['und'][0]['value'],
+            'billing_city' => $user_data->field_city['und'][0]['value'],
+            'billing_zone' => $user_data->field_state['und'][0]['value'],
+            'billing_postal_code' => $user_data->field_zip['und'][0]['value']));
+
+    }
+}
+
+
+
+function aaap_renewals_user_update(&$edit, $account, $category){
+
+    //dsm($edit);
+    // dsm($account);
+    if ($account->field_created_by['und'][0]['value'] == 'user_form') {
+        global $base_root;
+        $price = get_price($account);
+        $renewal_membership_node = node_load(PRODUCT_MEMBERSHIP_RENEWAL_ID);
+        $user_data = user_load($account->uid);
+
+        // if user role user change from Expired (rid = 8) to Active (rid = 5)
+        // Generate invoice - when is a expired member - check payment
+        if (array_key_exists(ACTIVE, $account->roles) and !array_key_exists(ACTIVE, $account->original->roles) and array_key_exists(EXPIRED, $account->original->roles)) {
+
+            mail($account->mail, SITE_NAME . ' Membership Renewed', 'Your ' . SITE_NAME . ' membership has been succesfully renewed.', HEADERS);
+
+            mail($account->mail, SITE_NAME . ' Membership: Notification of Payment Received',
+                'Thank you for your ' . SITE_NAME . ' Membership Renewal' . "\r\n"
+                . 'Registration Receipt' . "\r\n"
+                . 'Payment Type: Check' . "\r\n"
+                . 'Order: ' . "\r\n \r\n"
+                . $renewal_membership_node->title . "\r\n"
+                . 'Registration Fee $' . $price . "\r\n"
+                . 'Name: ' . $account->field_first_name['und'][0]['value'] . " " . $account->field_last_name['und'][0]['value'] . "\r\n"
+                . 'Institution: ' . $account->field_institution['und'][0]['value'] . "\r\n"
+                . 'Email: ' . $account->mail . "\r\n"
+                . 'Address: ' . $account->field_address_line_1['und'][0]['value'] . "\r\n"
+                . 'Address 1: ' . $account->field_address_line_2['und'][0]['value'] . "\r\n"
+                . 'City: ' . $account->field_city['und'][0]['value'] . "\r\n"
+                . 'State/Province: ' . $account->field_state['und'][0]['value'] . "\r\n"
+                . 'Zip/Postal Code: ' . $account->field_zip['und'][0]['value'] . "\r\n \r\n"
+                . 'Thank you,' . "\r\n \r\n"
+                . SITE_NAME, HEADERS);
+
+            insert_invoice(array(
+                'uid' => $account->uid,
+                'order_total' => sprintf("%.2f", $price),
+                'item_id' => PRODUCT_MEMBERSHIP_RENEWAL_ID,
+                'key_id' => 1,
+                'order_status' => 'completed',
+                'payment_method' => 'mail_check',
+                'primary_email' => $user_data->mail,
+                'additional_price' => NULL,
+                'additional_amount' => NULL,
+                'billing_first_name' => $user_data->field_first_name['und'][0]['value'],
+                'billing_last_name' => $user_data->field_last_name['und'][0]['value'],
+                'billing_company' => $user_data->field_institution['und'][0]['value'],
+                'billing_street1' => $user_data->field_address_line_1['und'][0]['value'],
+                'billing_street2' => $user_data->field_address_line_2['und'][0]['value'],
+                'billing_city' => $user_data->field_city['und'][0]['value'],
+                'billing_zone' => $user_data->field_state['und'][0]['value'],
+                'billing_postal_code' => $user_data->field_zip['und'][0]['value']));
+        }
+
+        // dsm($account);
+        $date1 = strtotime($account->field_renewal_date['und'][0]['value']);
+        $date2 = strtotime($account->original->field_renewal_date['und'][0]['value']);
+        $config_data = get_cms_config();
+
+        // Generate invoice - renewall membership - check payment
+        if (array_key_exists(ACTIVE, $account->roles) and array_key_exists(ACTIVE, $account->original->roles) and $date1 != $date2 and $date1 > $config_data['renewal_start_date']) {
+
+
+            mail(ADMIN_MAIL, 'An ' . SITE_NAME . ' Membership has renewed!', 'A renewed ' . SITE_NAME . ' member has completed payment.' . "\r\n"
+                . ' Click here to see the member\'s profile. ' . $base_root . '/user/' . $account->uid, HEADERS);
+
+            mail($account->mail, SITE_NAME . ' Membership: Notification of Payment Received',
+                'Thank you for your ' . SITE_NAME . ' Membership Renewal' . "\r\n"
+                . 'Registration Receipt' . "\r\n"
+                . 'Payment Type: Check' . "\r\n"
+                . 'Order: ' . "\r\n \r\n"
+                . $renewal_membership_node->title . "\r\n"
+                . 'Registration Fee $' . $price . "\r\n"
+                . 'Name: ' . $account->field_first_name['und'][0]['value'] . " " . $account->field_last_name['und'][0]['value'] . "\r\n"
+                . 'Institution: ' . $account->field_institution['und'][0]['value'] . "\r\n"
+                . 'Email: ' . $account->mail . "\r\n"
+                . 'Address: ' . $account->field_address_line_1['und'][0]['value'] . "\r\n"
+                . 'Address 1: ' . $account->field_address_line_2['und'][0]['value'] . "\r\n"
+                . 'City: ' . $account->field_city['und'][0]['value'] . "\r\n"
+                . 'State/Province: ' . $account->field_state['und'][0]['value'] . "\r\n"
+                . 'Zip/Postal Code: ' . $account->field_zip['und'][0]['value'] . "\r\n \r\n"
+                . 'Thank you,' . "\r\n \r\n"
+                . SITE_NAME, HEADERS);
+
+            insert_invoice(array(
+                'uid' => $account->uid,
+                'order_total' => sprintf("%.2f", $price),
+                'item_id' => PRODUCT_MEMBERSHIP_RENEWAL_ID,
+                'key_id' => 1,
+                'order_status' => 'completed',
+                'payment_method' => 'mail_check',
+                'primary_email' => $user_data->mail,
+                'additional_price' => NULL,
+                'additional_amount' => NULL,
+                'billing_first_name' => $user_data->field_first_name['und'][0]['value'],
+                'billing_last_name' => $user_data->field_last_name['und'][0]['value'],
+                'billing_company' => $user_data->field_institution['und'][0]['value'],
+                'billing_street1' => $user_data->field_address_line_1['und'][0]['value'],
+                'billing_street2' => $user_data->field_address_line_2['und'][0]['value'],
+                'billing_city' => $user_data->field_city['und'][0]['value'],
+                'billing_zone' => $user_data->field_state['und'][0]['value'],
+                'billing_postal_code' => $user_data->field_zip['und'][0]['value']));
+        }
+    }
+}
+
+function aaap_renewals_form_alter(&$form, &$form_state, $form_id){
+    global $user;
+
+    if($form_id == 'user_register_form' or $form_id == 'user_profile_form'){
+        if(array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles) || $user->uid == 1){
+            //$form['field_renewal_date']['#disabled']= TRUE;
+            $form['field_renewal_date']['#access']= TRUE;
+        }
+    }
+
+}
+
+function renewal_membership_access_helper(){
+
+    global $user;
+    //    dsm($user);
+
+    if(array_key_exists(EXPIRED, $user->roles)){
+        return true;
+    }
+
+    $user = user_load($user->uid, NULL, TRUE);
+    $config_data = get_cms_config();
+    $renewal_start_date = $config_data['renewal_start_date'];
+    $renewal_end_date = $config_data['renewal_end_date'];
+    $now = $config_data['now'];
+
+    // get the renewal user date
+    if(!empty($user->field_renewal_date)){
+        $renewal_user_date = strtotime($user->field_renewal_date['und'][0]['value']);
+    }else{
+        $renewal_user_date = strtotime('1 year ago');
+    }
+//    dsm('user:'.date("Y-m-d H:i",$renewal_user_date));
+//    dsm('start:'.date("Y-m-d H:i",$renewal_start_date));
+//    dsm('end:'.date("Y-m-d H:i",$renewal_end_date));
+//    dsm('now:'.date("Y-m-d H:i",$now));
+
+    if($renewal_user_date < $renewal_start_date && $now >= $renewal_start_date && $now <= $renewal_end_date){
+        return true;
+    }
+
+    // if none of the conditions above are met we will deny access
+    //drupal_goto("node/133");
+    return false;
+
+}
+
+function get_price($user){
+
+    $config_data = get_cms_config();
+    $price = 0;
+
+    if(isset($user->field_type_of_member['und'][0]['value'])){
+
+        switch ($user->field_type_of_member['und'][0]['value']) {
+            case 'regular':
+            case 'pending_adjunct':
+            case 'pending_emeritus':
+                $price = $config_data['amount_regular_member_init'];
+                break;
+            case 'adjunct':
+                $price = $config_data['amount_adjunct_member_init'];
+                break;
+            case 'emeritus':
+                $price = $config_data['amount_emeritus_member_init'];
+                break;
+        }
+
+    }else{
+        $price = $config_data['amount_regular_member_init'];
+    }
+
+    if(isset($config_data['node_config']->field_reminder_emails['und'])){
+        foreach($config_data['node_config']->field_reminder_emails['und'] as $value) {
+            $renewal_dates = strtotime(field_collection_item_load($value['value'])->field_reminder_date['und'][0]['value']);
+            if($config_data['now'] >= $renewal_dates){
+                if(isset($user->field_type_of_member['und'][0]['value'])){
+                    switch ($user->field_type_of_member['und'][0]['value']) {
+                        case 'regular':
+                        case 'pending_adjunct':
+                        case 'pending_emeritus':
+                            $price = field_collection_item_load($value['value'])->field_field_amount['und'][0]['value'];
+                            break;
+                        case 'adjunct':
+                            $price = field_collection_item_load($value['value'])->field_amount_adjunct_member['und'][0]['value'];
+                            break;
+                        case 'emeritus':
+                            $price = field_collection_item_load($value['value'])->field_amount_emeritus_member['und'][0]['value'];
+                            break;
+                    }
+
+                }else{
+                    $price = field_collection_item_load($value['value'])->field_field_amount['und'][0]['value'];
+                }
+
+            }
+
+        }
+    }
+    return $price;
+}
+
+function renewal_membership_link_login_callback(){
+
+    if(user_is_logged_in()){
+//        dsm('entro');
+        if(!renewal_membership_access_helper()){
+            drupal_goto(INVALID_RENEWAL, array('absolute' => true));
+        }
+
+        global $user;
+        $user = user_load($user->uid);
+        $user->field_created_by['und'][0]['value']= 'ubertcard';
+        user_save($user);
+        $price = get_price($user);
+        $nodo = node_load(PRODUCT_MEMBERSHIP_RENEWAL_ID);
+        $nodo->sell_price = $price;
+        node_save($nodo);
+        uc_cart_empty(uc_cart_get_id());
+        uc_cart_add_item(PRODUCT_MEMBERSHIP_RENEWAL_ID, $qty = 1, $data = NULL, $cid = NULL, $msg = TRUE, $check_redirect = TRUE, $rebuild = TRUE);
+        drupal_goto('cart/checkout');
+
+    }else{
+        drupal_goto('user',array('query'=>array('destination'=>'renewal-membership')));
+        }
+}
+
+function renewal_send_reminder_emails_callback(){
+
+    $config_data = get_cms_config();
+
+    foreach($config_data['node_config']->field_reminder_emails['und'] as $value){
+    $renewal_dates = strtotime(field_collection_item_load($value['value'])->field_reminder_date['und'][0]['value']);
+
+       // print 'reminder:'.strtotime(date("Y-m-d H:i",$renewal_dates)) . '<br/>';
+        //print 'now:'.strtotime(date("Y-m-d H:i",$config_data['now'])) . '<br/>';
+
+       if(strtotime(date("Y-m-d H:i",$config_data['now'])) == strtotime(date("Y-m-d H:i",$renewal_dates))){
+
+          // renewal_send_reminder_emails($config_data['renewal_start_date']);
+
+       }else{
+        print date("Y-m-d H:i",$config_data['now'])." ".date("Y-m-d H:i",$renewal_dates) . '<br/>';
+       }
+
+   }
+
+}
+
+function renewal_send_reminder_emails($renewal_start_date, $uid){
+
+
+        $config_data = get_cms_config();
+        $user = user_load($uid, NULL, TRUE);
+        print $uid;
+        // get the renewal user date
+        if(!empty($user->field_renewal_date)){
+            $renewal_user_date = strtotime($user->field_renewal_date['und'][0]['value']);
+        }else{
+            $renewal_user_date = 0;
+        }
+       print "send email?: user date: ".date("Y-m-d H:i",$renewal_user_date)." Start Date: ".date("Y-m-d H:i",$renewal_start_date) . '<br/>';
+
+        if( $renewal_user_date < $renewal_start_date ){
+            print "sending email to user $uid";
+
+            global $base_root;
+          include(DRUPAL_ROOT.'/sites/all/modules/config/remainder_email.php');
+
+
+         }
+
+
+
+}
+
+function renewal_period_ends_callback(){
+
+//    $config_data = get_cms_config();
+//    if(strtotime(date("Y-m-d H:i",$config_data['now']))== strtotime(date("Y-m-d H:i",))){
+
+//        renewal_period_ends($config_data['renewal_start_date']);
+
+//    }
+}
+
+function renewal_period_ends($renewal_start_date, $row){
+
+    $config_data = get_cms_config();
+
+
+        $user = user_load($row, NULL, TRUE);
+        $renewal_user_date = strtotime($user->field_renewal_date['und'][0]['value']);
+        print "start window date ".date("Y-m-d H:i",$renewal_start_date)." -- end: ".date("Y-m-d H:i",$config_data['renewal_end_date'])."<br/>";
+        print "renewal user date of $row: ".date("Y-m-d H:i",$renewal_user_date)." -- now:".date("Y-m-d H:i",$config_data['now'])."<br/>";
+
+        if($renewal_user_date < $renewal_start_date && $config_data['now'] >= $config_data['renewal_end_date']){
+            print "expiring id:".$row."<br/>";
+            custom_add_role_to_user($row, 'Expired Member');
+        }
+
+}
+
+function get_payment_method_string($payment_method){
+    if($payment_method == 'mail_check'){
+    return "Mail in Check";}
+    elseif($payment_method == 'credit_card'){
+     return "Credit Card";
+    }else{
+        return "No payment method selected";
+    }
+
+}
+
+
+
+
+
+
+function load_members() {
+
+    $members = array();
+
+    // Adding Orders - Credit Card Payment
+    $result = db_query('SELECT users.uid FROM {users,users_roles} WHERE users.uid = users_roles.uid and users_roles.rid = 5 GROUP BY users.uid');
+
+
+    foreach ($result as $record) {
+
+        $members[] = $record->uid;
+
+    }
+
+    return $members;
+
+}
+
+
+
+
+function initQueue($env = 'test'){
+
+    //Get the queue so we can add to it.  Use a
+    //descriptive name. It's ok if it doesn't exist yet.
+    $queue = DrupalQueue::get('myQueue');
+    print $env;
+    switch($env){
+        case 'test':
+            global $user_test;
+            $members = $user_test;
+            break;
+
+        case 'live':
+            $members = load_members();
+            break;
+
+    }
+
+    //Push all the items into the queue, one at a time.
+    //You can push any data in with (arrays, objects, etc).
+    foreach($members as $item) {
+        $queue->createItem($item);
+    }
+
+}
+
+
+function processQueue($op = 'emails'){
+
+    $queue = DrupalQueue::get('myQueue');
+    $config_data = get_cms_config();
+    $renewal_start_date = $config_data['renewal_start_date'];
+    $size = variable_get('aaap_queue_batch_size', '20');
+    $count = 0;
+
+    //Pull items out one at a time.
+    while($item = $queue->claimItem()) {
+        if($count>=$size){break;}
+
+        //$node_data = $item->data;
+        switch($op){
+            case 'emails':
+                renewal_send_reminder_emails($renewal_start_date, $item->data);
+                break;
+            case 'expire':
+                renewal_period_ends($renewal_start_date, $item->data);
+                break;
+
+        }
+
+        $queue->deleteItem($item);
+        $count++;
+
+
+    }
+
+}
+
+
+
+
+
+
+function _renewal_testing(){
+
+
+//    global $user_test;
+//    $users = $user_test;
+//
+//    $count = 1;
+//
+//    foreach($users as $nid){
+//        $user = user_load($nid);
+//       $user->mail = 'jendoesatest+'.$count.'@gmail.com';
+//
+//            $count++;
+//        $user->name = $user->mail;
+//        $hashthepass = '12345'; /* Your password value*/
+//        $hashthepass = user_hash_password(trim($hashthepass));
+//        $user->pass = $hashthepass;
+//        custom_add_role_to_user($user->uid, 'Active Member');
+//        $user->field_renewal_date['und'][0]['value'] = date("Y-m-d H:i",strtotime('2013-01-01 00:00'));
+//        user_save($user);
+//    }
+
+    $config = node_load(RENEWAL_CONFIG);
+    $shift = 6;
+
+    $config->field_renewal_period['und'][0]['value'] = date("Y-m-d H:i",strtotime('+3 minutes'));
+    $config->field_renewal_period['und'][0]['value2'] = date("Y-m-d H:i",strtotime('+18 minutes'));
+
+    //Wrap the config node with Entity API
+    $config_entity =  entity_metadata_wrapper('node', $config);
+    foreach($config_entity->field_reminder_emails as $value){
+
+        $raw_collection = $value->value();
+//        dsm($raw_collection);
+
+        $raw_collection->field_reminder_date['und'][0]['value'] = date("Y-m-d H:i",strtotime('+'.$shift.'minutes'));
+
+        $raw_collection->save();
+
+        // Save field-collection item.
+//        dsm($collection);
+        $shift = $shift + 3;
+
+    }
+
+    node_save($config);
+
+    drupal_goto("/node/".RENEWAL_CONFIG.'/edit');
+
+}

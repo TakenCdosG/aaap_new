@@ -1,0 +1,9 @@
+name = AAAP Extra
+description = AAAP Helper Module for Post Job and Sponsorship Forms.
+package = AAAP
+core = 7.x
+
+
+version = "7.x"
+core = "7.x"
+project = "aaap"

@@ -1,0 +1,13 @@
+default:
+    extensions:
+        Behat\MinkExtension\Extension:
+            base_url: http://aaap.local
+            goutte: ~
+            selenium2: ~
+        Drupal\DrupalExtension\Extension:
+            blackbox: ~
+            api_driver: 'drupal'        
+            drupal: 
+              drupal_root: 'C:\wamp\www\aaap'
+            text:
+              log_out: "Logout"
