@@ -805,6 +805,7 @@ function aaap_uc_checkout_complete($order, $account)
 
         aaap_mail(ADMIN_MAIL, 'A new ' . SITE_NAME . ' Membership has been activated!', 'A new ' . SITE_NAME . ' member has completed payment.' . "\r\n"
             .'Go here to see the member\'s profile. ' . $base_root . '/user/' . $account->uid. "\r\n \r\n"
+            .'Registran: '.$user_data->field_first_name['und'][0]['value']." ".$user_data->field_last_name['und'][0]['value']."\r\n \r\n"
             ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."\r\n \r\n"
             .'Thank you,'. "\r\n"
             .SITE_NAME, HEADERS);

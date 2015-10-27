@@ -267,6 +267,7 @@ function aaap_events_uc_checkout_complete($order, $account){
         $email->FromName  = SITE_NAME;
         $email->Subject   = $subject;
         $email->Body      = $message;
+        $email->Body      = $message;
         $email->IsHTML(true);
         $email->AddAddress($order->primary_email,'');
 
