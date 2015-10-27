@@ -276,6 +276,7 @@ function aaap_events_uc_checkout_complete($order, $account){
 
         $subject = SITE_NAME.' Meeting: New Registrant Notification';
         $message = 'A registrant has signed up for a '.$product_purchased->title.'. Click here to see the registration information: <a href="'.$base_root.'/node/'.$product_purchased->nid.'/submission/'.$submission->sid.'">'.$base_root.'/node/'.$product_purchased->nid.'/submission/'.$submission->sid.'</a><br /><br />'
+            .'Registrant: '.$submission->data[1][0]." ".$submission->data[2][0]."\r\n \r\n"
             ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."<br /><br />"
             .'Thank you,<br />'
             .SITE_NAME;
