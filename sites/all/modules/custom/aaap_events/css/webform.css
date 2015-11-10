@@ -15,7 +15,7 @@ and open the template in the editor.
 
 
 .ctools-use-modal-processed .messages_status{
-    background: #007490;
+    background: #235282;
     padding: 10px;
     color: #fff;
     font-family: Georgia;
@@ -27,7 +27,7 @@ and open the template in the editor.
 }
 
 div.ctools-modal-content .modal-header {
-    background-color: #007490;
+    background-color: #235282;
     padding: 0 .25em 0 1em;
     padding: 5px 10px;
 }
