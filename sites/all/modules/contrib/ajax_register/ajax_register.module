@@ -173,7 +173,7 @@ function ajax_register_form_alter(&$form, &$form_state, $form_id) {
   switch ($form_id) {
     case 'user_login_block':
         $current_path = current_path();
-        $conference_path = "conference/*/registration";
+        $conference_path = "event/*/registration";
         if(drupal_match_path($current_path, $conference_path)){
             // Include css and js for modal dialog.
             _ajax_register_include_modal();
@@ -212,7 +212,7 @@ function ajax_register_form_alter(&$form, &$form_state, $form_id) {
     case 'user_register_form':
       $enabled = FALSE;
       $current_path = current_path();
-      $allowed_paths = array("conference/*", "ajax_register/login/ajax");
+      $allowed_paths = array("event/*", "ajax_register/login/ajax");
       foreach ($allowed_paths as $key => $path ){
         if(drupal_match_path($current_path, $path)){
             $enabled = TRUE;
