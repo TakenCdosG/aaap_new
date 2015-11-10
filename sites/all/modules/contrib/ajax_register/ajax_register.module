@@ -219,7 +219,8 @@ function ajax_register_form_alter(&$form, &$form_state, $form_id) {
         }
       }
       
-      if($enabled){   
+      if($enabled){
+
             // Do not process form with AJAX that should be processed with CTools modal.
             $modal_links_enabled = variable_get('ajax_register_form_enable_modal_links', TRUE);
             if (!empty($form_state['ajax'])) {
@@ -229,7 +230,7 @@ function ajax_register_form_alter(&$form, &$form_state, $form_id) {
 
               // Add links processed with CTools modal.
               if ($modal_links_enabled) {
-                $msg = '<div class="messages_status">AASA MEMBERS: To ensure you receive the discounted member rate, please sign in prior to completing your registration.</div>';
+                $msg = '<div class="messages_status">AAAP MEMBERS: Please sign in prior to completing your registration.</div>';
                 $form['links'] = array(
                   '#theme' => 'item_list',
                   '#items' => _ajax_register_ajax_links($enabled_links, $form_id),
