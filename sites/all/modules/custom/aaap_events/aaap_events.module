@@ -543,6 +543,7 @@ function _get_last_submission($submissions){
 
   return false;
 }
+
 function _confirm_submission_webform($nid, $sid,$confirmed_field_id){
   $node = node_load($nid);
   $submission = webform_get_submission($nid,$sid);
@@ -564,7 +565,7 @@ function export_submissions_to_csv($node) {
 
   $options = array(
     'delimiter' => ',',
-    'components' => array('time', '1','2','3','4','5','6','7','8','9','10','11','12','13', '21', '25', '14', '16', '29', '63', '15', '19','27'),
+    'components' => array('time', '1','2','3','4','5','6','7','8','9','10','11','12','13', '21', '25', '14', '16', '29', '63', '15', '19','27', '30', '31'),
     'select_keys' => 0,
     'select_format' => 'separate',
     'range_type' => 'range',
