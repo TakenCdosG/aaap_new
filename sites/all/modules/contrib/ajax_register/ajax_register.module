@@ -195,6 +195,7 @@ function ajax_register_form_alter(&$form, &$form_state, $form_id) {
         case 'user_login':
             // Build classes for ajax modal link.
             $current_path = current_path();
+            die(var_dump($current_path));
             $events_path = "event/*/registration";
             if(drupal_match_path($current_path, $events_path)){
                 $classes = array();
