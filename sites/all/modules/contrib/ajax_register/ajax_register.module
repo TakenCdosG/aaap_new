@@ -195,9 +195,9 @@ function ajax_register_form_alter(&$form, &$form_state, $form_id) {
         case 'user_login':
             // Build classes for ajax modal link.
             $current_path = current_path();
-            die(var_dump($current_path));
             $events_path = "event/*/registration";
-            if(drupal_match_path($current_path, $events_path)){
+            $login_ajax = "ajax_register/login/ajax";
+            if(drupal_match_path($current_path, $events_path) || drupal_match_path($current_path, $login_ajax)){
                 $classes = array();
                 $classes[] = 'ctools-use-modal';
                 $classes[] = 'ctools-modal-ctools-ajax-register-style';
