@@ -194,6 +194,8 @@ function ajax_register_form_alter(&$form, &$form_state, $form_id) {
 
     case 'user_login':
          // Build classes for ajax modal link.
+        $current_path = current_path();
+        dpm(array('current_path' => $current_path));
         $classes = array();
         $classes[] = 'ctools-use-modal';
         $classes[] = 'ctools-modal-ctools-ajax-register-style';
