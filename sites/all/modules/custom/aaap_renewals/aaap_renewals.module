@@ -28,10 +28,21 @@ function aaap_renewals_menu(){
         'page arguments' => array(1),
         'access callback' => TRUE,
     );
+
     $items['process-queue/%'] = array(
         'page callback' => 'processQueue',
         'page arguments' => array(1),
         'access callback' => TRUE,
+    );
+
+    $items['admin/config/aaap'] = array(
+        'title' => 'Config AAAP',
+        'description' => 'Set AAAP Setting.',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('aaap_renewals_admin_form'),
+        'file' => 'aaap_renewals.admin.inc',
+        'access arguments' => array('administer etc migrate'),
+        'type' => MENU_NORMAL_ITEM,
     );
 
     return $items;
