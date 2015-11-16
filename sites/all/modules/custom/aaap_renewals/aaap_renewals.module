@@ -114,7 +114,7 @@ function aaap_renewals_user_update(&$edit, $account, $category){
         $user_data = user_load($account->uid);
 
         // if user role user change from Expired (rid = 8) to Active (rid = 5)
-        // Generate invoice - when is a expired member - check payment
+        // Generate invoice - when is a Lapsed Member - check payment
         if (array_key_exists(ACTIVE, $account->roles) and !array_key_exists(ACTIVE, $account->original->roles) and array_key_exists(EXPIRED, $account->original->roles)) {
 
             mail($account->mail, SITE_NAME . ' Membership Renewed', 'Your ' . SITE_NAME . ' membership has been succesfully renewed.', HEADERS);
@@ -408,7 +408,7 @@ function renewal_period_ends($renewal_start_date, $row){
 
         if($renewal_user_date < $renewal_start_date && $config_data['now'] >= $config_data['renewal_end_date']){
             print "expiring id:".$row."<br/>";
-            custom_add_role_to_user($row, 'Expired Member');
+            custom_add_role_to_user($row, 'Lapsed Member');
         }
 
 }
