@@ -34,17 +34,6 @@ function aaap_renewals_menu(){
         'page arguments' => array(1),
         'access callback' => TRUE,
     );
-
-    $items['admin/config/aaap'] = array(
-        'title' => 'Config AAAP',
-        'description' => 'Set AAAP Setting.',
-        'page callback' => 'drupal_get_form',
-        'page arguments' => array('aaap_renewals_admin_form'),
-        'file' => 'aaap_renewals.admin.inc',
-        'access arguments' => array('administer etc migrate'),
-        'type' => MENU_NORMAL_ITEM,
-    );
-
     return $items;
 }
 
@@ -435,6 +424,26 @@ function get_payment_method_string($payment_method){
 
 }
 
+function variable_get_admin_mail_renewal_confirmation_email($dafault = ''){
+    $admin_mail_renewal_confirm_value = "";
+    $query = db_select('field_data_field_admin_mail_renewal_confirm', 'r');
+    $result = $query->fields('r', array('field_admin_mail_renewal_confirm_value'))
+        ->condition('bundle', 'aaap_module_configurations', '=')
+        ->range(0,1)
+        ->execute();
+
+    while($record = $result->fetchAssoc()) {
+        if(isset($record['field_admin_mail_renewal_confirm_value'])){
+            $admin_mail_renewal_confirm_value = $record['field_admin_mail_renewal_confirm_value'];
+        }
+    }
+
+    if(empty($admin_mail_renewal_confirm_value)){
+        $admin_mail_renewal_confirm_value = $dafault;
+    }
+
+    return $admin_mail_renewal_confirm_value;
+}
 
 
 
