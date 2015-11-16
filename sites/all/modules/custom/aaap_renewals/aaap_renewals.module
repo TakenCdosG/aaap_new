@@ -54,7 +54,7 @@ function aaap_renewals_uc_checkout_complete($order, $account) {
 
          $user_data = user_load($account->uid);
 
-       mail(ADMIN_MAIL,'An '.SITE_NAME.' Membership has been renewed!' ,'A renewed '.SITE_NAME.' member has completed payment.'."\r\n"
+       mail(ADMIN_MAIL_RENEWAL_CONFIRMATION_EMAIL,'An '.SITE_NAME.' Membership has been renewed!' ,'A renewed '.SITE_NAME.' member has completed payment.'."\r\n"
            .'Go here to see the member\'s profile. '.$base_root.'/user/'.$account->uid."\r\n \r\n"
            .'Registrant: '.$user_data->field_first_name['und'][0]['value']." ".$user_data->field_last_name['und'][0]['value']."\r\n \r\n"
            ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."\r\n \r\n"
@@ -166,7 +166,7 @@ function aaap_renewals_user_update(&$edit, $account, $category){
         if (array_key_exists(ACTIVE, $account->roles) and array_key_exists(ACTIVE, $account->original->roles) and $date1 != $date2 and $date1 > $config_data['renewal_start_date']) {
 
 
-            mail(ADMIN_MAIL, 'An ' . SITE_NAME . ' Membership has renewed!', 'A renewed ' . SITE_NAME . ' member has completed payment.' . "\r\n"
+            mail(ADMIN_MAIL_RENEWAL_CONFIRMATION_EMAIL, 'An ' . SITE_NAME . ' Membership has renewed!', 'A renewed ' . SITE_NAME . ' member has completed payment.' . "\r\n"
                 . ' Click here to see the member\'s profile. ' . $base_root . '/user/' . $account->uid, HEADERS);
 
             mail($account->mail, SITE_NAME . ' Membership: Notification of Payment Received',
