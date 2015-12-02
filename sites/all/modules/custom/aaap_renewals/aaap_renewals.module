@@ -408,6 +408,7 @@ function renewal_period_ends($renewal_start_date, $row){
 
         if($renewal_user_date < $renewal_start_date && $config_data['now'] >= $config_data['renewal_end_date']){
             print "expiring id:".$row."<br/>";
+            //custom_add_role_to_user($row, 'Expired Member');-- "Expired" was changed to "Lapsed"
             custom_add_role_to_user($row, 'Lapsed Member');
         }
 
