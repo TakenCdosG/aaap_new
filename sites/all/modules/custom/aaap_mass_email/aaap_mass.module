@@ -25,7 +25,10 @@ if(SITE_NAME == 'AASA'){
 
     $MASS_EMAIL_GROUPS = array(
         'all' => t('All AAAP Members'),
-        'directors' => t('Board of Directors'));
+        'directors' => t('Board of Directors'),
+        'lapsed' => 'Lapsed Members'
+    );
+
 }
 
 function aaap_mass_menu(){
@@ -255,7 +258,9 @@ function aaap_mass_get_recipients($group){
             $config = node_load(GLOBAL_CONFIG);
             return explode(",", $config->field_board_of_directors['und'][0]['value']);
             break;
-
+        case 'lapsed':
+            $result = db_query("SELECT u.mail as mail FROM users u, users_roles ur WHERE u.uid = ur.uid AND ur.rid = 8 GROUP BY u.uid");
+            break;
 
     }
 
