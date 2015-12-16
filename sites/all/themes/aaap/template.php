@@ -45,6 +45,6 @@ function aaap_preprocess_node(&$variables){
         $date = new DateTime();
         $date->setTimestamp($timeStamp);
         $date_str = $date->format('F d, Y - h:i');
-        $vars['submitted'] = t('Submitted by !username on !datetime', array('!username' => $variables['name'], '!datetime' => $date_str));
+        $variables['submitted'] = t('Submitted by !username on !datetime', array('!username' => $variables['name'], '!datetime' => $date_str));
     }
 }
