@@ -39,6 +39,7 @@ function aaap_preprocess_node(&$variables){
     }
 
     if ($variables['node']->type = "forum") {
+        dpm($variables['node']->type);
         date_default_timezone_set('America/New_York');
         $timeStamp = $variables['node']->created;
         $date = new DateTime();
