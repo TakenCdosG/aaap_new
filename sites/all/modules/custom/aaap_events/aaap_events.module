@@ -580,7 +580,12 @@ function _render_event_webform($nid)
 {
 
     $node = node_load($nid);
-    return node_view($node);
+    $render = node_view($node, 'full', NULL);
+    $from = render($render);
+    //dpm(array("from" => $from, "node" => $node));
+    return $from;
+    //$node = node_load($nid);
+    //return node_view($node);
 }
 
 

@@ -39,6 +39,22 @@ function get_sponsorship_price($type_sponsorship){
     }
 }
 
+
+/**
+ * Implements hook_menu_alter.
+ * Check access for forum menu item.
+ */
+function aaap_extra_menu_alter(&$items) {
+    $items['forum']['access callback'] = '_accesscheck';
+}
+/**
+ * Callback to disallow access for the anonymous user.
+ */
+function _accesscheck(){
+    global $user;
+    return $user->uid;
+}
+
 function aaap_extra_webform_submission_insert($node, $submission) {
 
     //dsm($submission);
@@ -281,5 +297,71 @@ function aaap_extra_form_alter(&$form, &$form_state, $form_id){
             $submission = webform_get_submission(POST_JOB_FORM_ID,$sid);
             $form['panes']['customer']['primary_email']['#value'] = $submission->data[POST_JOB_EMAIL_FIELD_ID][0];
         }
+    }
+}
+
+function aaap_extra_mail($key, &$message, $params) {
+    switch ($key) {
+        case 'aaap_forum_new_comment':
+            $message['subject'] = $params['subject'];
+            $message['body'] = $params['body'];
+            break;
+    }
+}
+
+/*
+*  The comment is being inserted.
+*/
+function aaap_comment_insert($comment){
+    if($comment->nid){
+        global $base_url, $base_path;
+        $nid = $comment->nid;
+        $to = array();
+        $node = node_load($nid);
+        $type = $node->type;
+
+        if(isset($node->name)){
+            $to[] = $node->name;
+        }
+
+        if($type == "forum"){
+            $comments = comment_load_multiple(comment_get_thread($node, '', 100));
+            foreach ($comments as $key => $comment) {
+                if(!in_array($comment->name, $to)){
+                    $to[] = $comment->name;
+                }
+            }
+            //dpm(array("comments" => $comments));
+        }
+
+        if(count($to)>0){
+
+            $module = 'aaap_extra';
+            $from = variable_get('system_mail', '');
+            $node_url = $base_url. $base_path. drupal_get_path_alias('node/'.$nid);
+            $comment_url = $base_url. $base_path. drupal_get_path_alias('comment/'.$comment->cid).'#comment-'.$comment->cid;
+            $mail_token = 'aaap_forum_new_comment';
+            $message = array(
+                'to' => implode(",", $to)
+            );
+
+            $params = array(
+                'subject' => 'AAAP Forum: New Comment Posted.',
+                'body' => array(
+                    'There has been a new Comment posted on the AAAP Forum Topic: '.$node_url.'.<br/><br/>You can view the comment at: '.$comment_url.'.'
+                )
+            );
+
+            $response = drupal_mail($module, $mail_token, $message['to'], language_default(), $params,  $from);
+            if ($response['send']) {
+                // Success.
+                watchdog('aaap', '<b>Email: </b><br/><pre> Success: '.print_r($to, TRUE).'</pre>');
+            }
+            else {
+                // Failure.
+                watchdog('aaap', '<b>Email: </b><br/><pre> Failure: '.print_r($to, TRUE).'</pre>');
+            }
+        }
+
     }
 }

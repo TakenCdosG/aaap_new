@@ -40,3 +40,9 @@ strong{
     font-family: 'allerbold';
     font-weight: normal;
 }
+
+body{
+    font-family: 'allerregular';
+    font-size: 16px;
+    color: #6c6963;
+}

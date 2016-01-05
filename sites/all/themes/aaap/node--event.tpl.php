@@ -114,8 +114,10 @@
     <?php }else{ ?>
    <div class="event-webform">
     <?php
+        $node = node_load($node->nid);
         webform_node_view($node,'full');
         print theme_webform_view($node->content);
+        //dpm(array("node" => $node, "node->content" => $node->content));
     ?>
    </div>
     <?php } ?>
