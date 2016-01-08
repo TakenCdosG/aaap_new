@@ -360,7 +360,7 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
 
         unset($form['#metatags']);
         unset($form['redirect']);
-        if(($form_id == 'user_register_form' ){
+        if($form_id == 'user_register_form'){
             $form['#attached']['js'] = array(
                 drupal_get_path('module', 'aaap') . '/js/conditional_fields.js',
             );
