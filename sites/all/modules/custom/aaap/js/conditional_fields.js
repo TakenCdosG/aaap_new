@@ -9,7 +9,10 @@
         var $form = $("#user-register-form");
         var $select = $('#edit-field-us-province-state-und', $form);
         var $field_us_state_province = $('#edit-field-us-state-province', $form);
-        var $field_region = $('#edit-field-region', $form);
+        var $field_us_province_state = $('#edit-field-us-province-state', $form);
+        var $field_region_us = $('#edit-field-region #edit-field-region-und-us', $form);
+        var $field_region_canada = $('#edit-field-region #edit-field-region-und-canada', $form);
+        var $field_canada_state_province = $('#edit-field-canada-state-province', $form);
         var $region = $("#edit-field-us-region-und", $form);
         var south = ["AL", "AR", "DE", "FL", "GA" , "KY" , "LA" , "MD" , "MS" , "NC" , "OK" , "SC" , "TN" , "TX" , "VA" , "WA" , "WV"];
         var northeast = ["CT", "ME", "MA", "NH", "NJ", "NY", "PA", "RI", "VT"];
@@ -18,10 +21,25 @@
 
         $region.attr('disabled', 'disabled');
         $field_us_state_province.css("display", "none");
+        $field_us_province_state.css("display", "none");
+        $field_canada_state_province.css("display", "none");
 
-        $field_region.change(function() {
-            var selected = $(this).val();
-            console.log("-> selected: "+selected);
+        $field_region_us.change(function() {
+            if(this.checked) {
+                //Do stuff
+                $field_us_province_state.css("display", "block");
+                $region.css("display", "block");
+                $field_canada_state_province.css("display", "none");
+            }
+        });
+
+        $field_region_canada.change(function() {
+            if(this.checked) {
+                //Do stuff
+                $field_us_province_state.css("display", "none");
+                $region.css("display", "none");
+                $field_canada_state_province.css("display", "block");
+            }
         });
 
         $select.change(function() {
