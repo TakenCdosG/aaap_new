@@ -20,6 +20,7 @@
         var west = ["AK", "AZ", "CA", "CO", "HI", "ID", "MT", "NM", "NV", "OR", "UT", "WY"];
 
         $region.attr('disabled', 'disabled');
+        $region.css("display", "none");
         $field_us_state_province.css("display", "none");
         $field_us_province_state.css("display", "none");
         $field_canada_state_province.css("display", "none");
