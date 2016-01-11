@@ -1542,10 +1542,14 @@ table.responsive td, table.responsive th {
 }
 
 
-.flip-scroll table,
-.table td .img-responsive {
-    width: 100%
+.flip-scroll table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    display: block;
+    position: relative;
+    width: 100%;
 }
+
 @media only screen and (max-width: 4000px) {
     .flip-scroll .flip-content:after {
         visibility: hidden;
