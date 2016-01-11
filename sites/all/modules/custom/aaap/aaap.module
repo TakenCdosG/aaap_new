@@ -1207,6 +1207,10 @@ function aaap_preprocess_views_view(&$variables){
 }
 
 function aaap_preprocess_views_view_table(&$vars){
-    dpm($vars);
-    $vars['classes_array'][] = 'table table-striped responsive';
+    //dpm($vars);
+    if(isset($vars['view']->name)){
+        if($vars['view']->name == 'head_administrator_information'){
+            $vars['classes_array'][] = 'table table-striped responsive';
+        }
+    }
 }
