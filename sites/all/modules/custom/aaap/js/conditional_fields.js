@@ -16,6 +16,14 @@
         var $field_canada_state_province = $('#edit-field-canada-state-province', $form);
         var $field_attach_und_yes = $('#edit-field-attach-und-yes', $form);
         var $region_head_administrator = $('.head-administrator', $form);
+        var $field_institution = $('#edit-field-institution-und-0-value', $form);
+        var $field_ha_institution = $('#edit-field-institution-name-und-0-value', $form);
+
+        var $field_institution_type_und_public = $('#edit-field-institution-type-und-public', $form);
+        var $field_institution_type_und_private = $('#edit-field-institution-type-und-private', $form);
+
+        var $field_ha_institution_type_und_public = $('#edit-field-ha-institution-type-und-public', $form);
+        var $field_ha_institution_type_und_private = $('#edit-field-ha-institution-type-und-private', $form);
 
         var $region = $("#edit-field-us-region-und", $form);
         var south = ["AL", "AR", "DE", "FL", "GA" , "KY" , "LA" , "MD" , "MS" , "NC" , "OK" , "SC" , "TN" , "TX" , "VA" , "WA" , "WV"];
@@ -86,6 +94,24 @@
         }else{
             $region_head_administrator.css("display", "none");
         }
+
+        // Populated Field
+        $field_institution.change(function() {
+            var val_field_institution = $field_institution.val();
+            $field_ha_institution.val(val_field_institution);
+        });
+
+        $field_institution_type_und_public.click(function () {
+            if ($(this).is(':checked')) {
+                $field_ha_institution_type_und_public.prop('checked', true);
+            }
+        });
+
+        $field_institution_type_und_private.click(function () {
+            if ($(this).is(':checked')) {
+                $field_ha_institution_type_und_private.prop('checked', true);
+            }
+        });
 
     });
 })(jQuery);
