@@ -6,7 +6,7 @@
 (function ($) {
     $(document).ready(function () {
         var switched = false;
-        var resolution = 5000; //767
+        var resolution = 767;
         var updateTables = function() {
             if (($(window).width() < resolution) && !switched ){
                 switched = true;
