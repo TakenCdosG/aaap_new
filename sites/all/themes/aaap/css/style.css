@@ -1505,6 +1505,11 @@ table.responsive{
     margin: 0 0 18px;
     border: 1px solid #ddd;
     margin-top: 20px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    display: block;
+    position: relative;
+    width: 100%;
 }
 
 table.responsive thead th{
@@ -1533,9 +1538,92 @@ table.responsive td, table.responsive th {
 }
 
 .view-head-administrator-information .view-content{
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    border: 1px solid #e7ecf1;
-    margin: 10px 0!important;
+
+}
+
+
+.flip-scroll table,
+.table td .img-responsive {
+    width: 100%
+}
+@media only screen and (max-width: 4000px) {
+    .flip-scroll .flip-content:after {
+        visibility: hidden;
+        display: block;
+        font-size: 0;
+        content: " ";
+        clear: both;
+        height: 0
+    }
+    .flip-scroll * html .flip-content {
+        zoom: 1
+    }
+    .flip-scroll td,
+    .flip-scroll th {
+        margin: 0;
+        vertical-align: top
+    }
+    .flip-scroll th {
+        border: 0!important;
+        border-bottom: 1px solid #ddd!important;
+        border-right: 1px solid #ddd!important;
+        font-size: 13px!important;
+        padding: 5px;
+        width: auto!important;
+        display: block;
+        text-align: right
+    }
+    .flip-scroll table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        display: block;
+        position: relative;
+        width: 100%
+    }
+    .flip-scroll thead {
+        display: block;
+        float: left
+    }
+    .flip-scroll tbody {
+        display: block;
+        width: auto;
+        position: relative;
+        overflow-x: auto;
+        white-space: nowrap
+    }
+    .flip-scroll .flip-content tbody tr td {
+        font-size: 13px;
+        line-height: 1.483
+    }
+    .flip-scroll .table-bordered.flip-content tbody tr td {
+        font-size: 13px;
+        line-height: 1.43
+    }
+    .flip-scroll thead tr {
+        display: block;
+    }
+    .flip-scroll tbody tr {
+        display: inline-block;
+        vertical-align: top;
+        margin-left: -5px
+    }
+    .flip-scroll td {
+        display: block;
+        min-height: 1.25em;
+        text-align: left;
+        border-top: 0!important;
+        border-left: 0!important;
+        border-right: 0!important;
+        border-bottom: 0
+    }
+    .flip-scroll th {
+        border-left: 0
+    }
+    .flip-scroll tbody tr {
+        border-left: 1px solid #ddd
+    }
+    .flip-scroll td:last-child,
+    .flip-scroll th:last-child {
+        border-bottom: 1px solid #ddd
+    }
 }
