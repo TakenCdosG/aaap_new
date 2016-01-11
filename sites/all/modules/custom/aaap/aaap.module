@@ -1201,6 +1201,7 @@ function set_status_invoice($key_id, $item_id, $new_status = 'completed')
 
 function aaap_preprocess_views_view(&$variables){
     if($variables['name'] == 'head_administrator_information' && $variables['display_id'] == 'page'){
+        dpm($variables);
         drupal_add_css(drupal_get_path("module", "aaap") . '/css/responsive-tables.css');
         drupal_add_js(drupal_get_path("module", "aaap") . '/js/responsive-tables.js', array('scope' => 'footer'));
     }
