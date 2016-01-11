@@ -1505,3 +1505,13 @@ table.responsive{
     margin: 0 0 18px;
     border: 1px solid #ddd;
 }
+
+table.responsive thead th{
+    padding: 0px 10px 0px 10px;
+    min-width: 150px;
+    text-align: center;
+}
+
+table.responsive tbody tr.odd{
+    background: #f9f9f9;
+}
