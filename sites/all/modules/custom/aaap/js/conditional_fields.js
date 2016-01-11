@@ -7,6 +7,10 @@
     $(document).ready(function () {
 
         var $form = $("#user-register-form");
+        if ($form.length > 0){
+        }else{
+            $form = $("#user-profile-form");
+        }
         var $select = $('#edit-field-us-province-state-und', $form);
         var $field_us_state_province = $('#edit-field-us-state-province', $form);
         var $field_us_province_state = $('#edit-field-us-province-state', $form);
