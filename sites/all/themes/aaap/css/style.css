@@ -1532,7 +1532,6 @@ table.responsive tbody tr.odd{
 table.responsive td, table.responsive th {
     padding: 9px 10px;
     text-align: left;
-    border-right: 1px solid #e1e2dc;
 }
 
 .view-head-administrator-information .view-content{
@@ -1626,6 +1625,6 @@ table.responsive td, table.responsive th {
     }
     .flip-scroll td:last-child,
     .flip-scroll th:last-child {
-        border-bottom: 1px solid #ddd
+        border-bottom: none!important;
     }
 }
