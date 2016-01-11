@@ -14,6 +14,8 @@
         var $field_us_region = $('#edit-field-us-region', $form);
         var $field_region_canada = $('#edit-field-region #edit-field-region-und-canada', $form);
         var $field_canada_state_province = $('#edit-field-canada-state-province', $form);
+        var $field_attach_und_yes = $('#edit-field-attach-und-yes', $form);
+
         var $region = $("#edit-field-us-region-und", $form);
         var south = ["AL", "AR", "DE", "FL", "GA" , "KY" , "LA" , "MD" , "MS" , "NC" , "OK" , "SC" , "TN" , "TX" , "VA" , "WA" , "WV"];
         var northeast = ["CT", "ME", "MA", "NH", "NJ", "NY", "PA", "RI", "VT"];
@@ -66,6 +68,15 @@
             inArray = west.indexOf(selected);
             if(inArray != -1){
                 $("#edit-field-us-region-und", $form).val("WEST");
+            }
+        });
+
+        $($field_attach_und_yes).change(function() {
+            if(this.checked) {
+                //Do stuff
+                console.log("-> Mostrar.")
+            }else{
+                console.log("-> Ocultar.")
             }
         });
 
