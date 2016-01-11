@@ -1460,3 +1460,27 @@ tr.even, tr.odd{
 h2.title.comment-form{
     margin-top: 30px;
 }
+
+.head-administrator{
+    border: 1px solid #ccc;
+    padding: 0px 10px 10px 10px;
+}
+
+.head-administrator h3{
+    padding: 5px 10px 10px 10px;
+    margin: 0px -10px 10px -10px;
+    border-width: 0 0px 1px 0px;
+    border-style: solid;
+    border-color: #bebfb9;
+    background: #f3f4ee;
+    color: #245383;
+    font-size: 16px;
+    line-height: 16px;
+    font-family: 'allerbold';
+}
+
+.head-administrator .form-item label {
+    float: left;
+    font-weight: normal;
+    width: 10em;
+}
