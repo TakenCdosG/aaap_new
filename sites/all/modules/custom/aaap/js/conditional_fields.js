@@ -15,6 +15,7 @@
         var $field_region_canada = $('#edit-field-region #edit-field-region-und-canada', $form);
         var $field_canada_state_province = $('#edit-field-canada-state-province', $form);
         var $field_attach_und_yes = $('#edit-field-attach-und-yes', $form);
+        var $region_head_administrator = $('.head-administrator', $form);
 
         var $region = $("#edit-field-us-region-und", $form);
         var south = ["AL", "AR", "DE", "FL", "GA" , "KY" , "LA" , "MD" , "MS" , "NC" , "OK" , "SC" , "TN" , "TX" , "VA" , "WA" , "WV"];
@@ -74,9 +75,9 @@
         $($field_attach_und_yes).change(function() {
             if(this.checked) {
                 //Do stuff
-                console.log("-> Mostrar.")
+                $region_head_administrator.css("display", "block");
             }else{
-                console.log("-> Ocultar.")
+                $region_head_administrator.css("display", "none");
             }
         });
 
