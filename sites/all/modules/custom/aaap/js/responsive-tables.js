@@ -6,12 +6,21 @@
 (function ($) {
     $(document).ready(function () {
         var switched = false;
+        var resolution = 5000; //767
         var updateTables = function() {
-            switched = true;
-            $("table.responsive").each(function(i, element) {
-                splitTable($(element));
-            });
-            return true;
+            if (($(window).width() < resolution) && !switched ){
+                switched = true;
+                $("table.responsive").each(function(i, element) {
+                    splitTable($(element));
+                });
+                return true;
+            }
+            else if (switched && ($(window).width() > resolution)) {
+                switched = false;
+                $("table.responsive").each(function(i, element) {
+                    unsplitTable($(element));
+                });
+            }
         };
 
         $(window).load(updateTables);
