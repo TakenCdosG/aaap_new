@@ -1513,8 +1513,6 @@ table.responsive{
 }
 
 table.responsive thead th{
-    padding: 5px 10px 5px 10px;
-    min-width: 150px;
     text-align: center;
     color: #235383;
     font-size: 15px;
