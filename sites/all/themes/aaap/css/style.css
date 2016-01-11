@@ -1464,6 +1464,7 @@ h2.title.comment-form{
 .head-administrator{
     border: 1px solid #ccc;
     padding: 0px 10px 10px 10px;
+    margin: 0px 0px 20px 0px;
 }
 
 .head-administrator h3{
