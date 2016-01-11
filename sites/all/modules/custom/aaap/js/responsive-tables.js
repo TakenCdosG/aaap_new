@@ -1,4 +1,10 @@
-$(document).ready(function() {
+/*
+ * @file
+ * JavaScript for Responsive Tables.
+ *
+ */
+(function ($) {
+    $(document).ready(function () {
   var switched = false;
   var updateTables = function() {
     if (($(window).width() < 767) && !switched ){
@@ -64,4 +70,7 @@ $(document).ready(function() {
     });
   }
 
-});
+
+    });
+})(jQuery);
+
