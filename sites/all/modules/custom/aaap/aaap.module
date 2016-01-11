@@ -1210,7 +1210,7 @@ function aaap_preprocess_views_view_table(&$vars){
     //dpm($vars);
     if(isset($vars['view']->name)){
         if($vars['view']->name == 'head_administrator_information'){
-            $vars['classes_array'][] = 'table table-striped responsive';
+            $vars['classes_array'][] = 'flip-scroll';
         }
     }
 }
