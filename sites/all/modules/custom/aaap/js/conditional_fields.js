@@ -81,5 +81,11 @@
             }
         });
 
+        if ($field_attach_und_yes.is(':checked')) {
+            $region_head_administrator.css("display", "block");
+        }else{
+            $region_head_administrator.css("display", "none");
+        }
+
     });
 })(jQuery);
