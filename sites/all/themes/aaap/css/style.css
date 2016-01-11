@@ -1531,3 +1531,11 @@ table.responsive td, table.responsive th {
     text-align: left;
     border-right: 1px solid #e1e2dc;
 }
+
+.view-head-administrator-information .view-content{
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid #e7ecf1;
+    margin: 10px 0!important;
+}
