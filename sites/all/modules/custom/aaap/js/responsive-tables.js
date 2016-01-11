@@ -15,10 +15,17 @@
       return true;
     }
     else if (switched && ($(window).width() > 767)) {
-      switched = false;
-      $("table.responsive").each(function(i, element) {
-        unsplitTable($(element));
-      });
+        switched = true;
+        $("table.responsive").each(function(i, element) {
+            splitTable($(element));
+        });
+        return true;
+       /*
+          switched = false;
+          $("table.responsive").each(function(i, element) {
+            unsplitTable($(element));
+          });
+      */
     }
   };
    
