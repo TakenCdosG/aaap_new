@@ -1504,6 +1504,7 @@ table.responsive{
     border-radius: 3px;
     margin: 0 0 18px;
     border: 1px solid #ddd;
+    margin-top: 20px;
 }
 
 table.responsive thead th{
