@@ -1479,8 +1479,19 @@ h2.title.comment-form{
     font-family: 'allerbold';
 }
 
+.head-administrator .form-item {
+    clear:both;
+}
+
 .head-administrator .form-item label {
     float: left;
     font-weight: normal;
-    width: 10em;
+    width: auto;
+    margin-right: 15px;
+}
+
+.head-administrator .form-item label.option {
+    float: none;
+    font-weight: normal;
+    width: auto;
 }
