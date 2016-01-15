@@ -46,4 +46,4 @@ define('MASS_EMAIL_PATH', 'mass-email');
 
 global $user_test;
 
-$user_test = array(261);
+$user_test = array(261, 1134);
