@@ -1544,12 +1544,12 @@ table.responsive td, table.responsive th {
 }
 
 .group-inline-fields .field-name-field-us-region{
-    display: inline-block;
+    display: inline-block!important;
     margin-right: 20px;
 }
 
 .group-inline-fields .field-name-field-us-province-state{
-    display: inline-block;
+    display: inline-block!important;
 }
 
 .flip-scroll table {
