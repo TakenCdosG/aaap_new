@@ -7,13 +7,16 @@
     $(document).ready(function () {
 
         var $form = $("#user-register-form");
+        var $update_form = false;
         if ($form.length > 0){
         }else{
             $form = $("#user-profile-form");
+            $update_form = true;
         }
         var $select = $('#edit-field-us-province-state-und', $form);
         var $field_us_state_province = $('#edit-field-us-state-province', $form);
         var $field_us_province_state = $('#edit-field-us-province-state', $form);
+        var $field_state = $('#edit-field-state', $form);
         var $field_region_us = $('#edit-field-region #edit-field-region-und-us', $form);
         var $field_us_region = $('#edit-field-us-region', $form);
         var $field_region_canada = $('#edit-field-region #edit-field-region-und-canada', $form);
@@ -37,9 +40,23 @@
 
         $region.attr('disabled', 'disabled');
         $field_us_region.css("display", "none");
+        $field_state.css("display", "none");
         $field_us_state_province.css("display", "none");
         $field_us_province_state.css("display", "none");
         $field_canada_state_province.css("display", "none");
+        if($update_form){
+            if($field_region_us.is(":checked")){
+                $field_us_province_state.css("display", "inline-block");
+                $field_us_region.css("display", "inline-block");
+                $field_canada_state_province.css("display", "none");
+            }
+
+            if($field_region_canada.is(":checked")){
+                $field_us_province_state.css("display", "none");
+                $field_us_region.css("display", "none");
+                $field_canada_state_province.css("display", "block");
+            }
+        }
 
         $field_region_us.change(function() {
             if(this.checked) {
