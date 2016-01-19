@@ -44,7 +44,7 @@
         $field_region_us.change(function() {
             if(this.checked) {
                 //Do stuff
-                $field_us_province_state.css("display", "inline-block!");
+                $field_us_province_state.css("display", "inline-block");
                 $field_us_region.css("display", "inline-block");
                 $field_canada_state_province.css("display", "none");
             }
