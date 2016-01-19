@@ -30,10 +30,10 @@
         var $field_ha_institution_type_und_private = $('#edit-field-ha-institution-type-und-private', $form);
 
         var $region = $("#edit-field-us-region-und", $form);
-        var south = ["AL", "AR", "DE", "FL", "GA" , "KY" , "LA" , "MD" , "MS" , "NC" , "OK" , "SC" , "TN" , "TX" , "VA" , "WA" , "WV"];
+        var south = ["AL", "AR", "DE", "FL", "GA" , "KY" , "LA" , "MD" , "MS" , "NC" , "OK" , "SC" , "TN" , "TX" , "VA" , "WV"];
         var northeast = ["CT", "ME", "MA", "NH", "NJ", "NY", "PA", "RI", "VT"];
         var midwest = ["IL", "IN", "IA", "KS", "MI", "MN", "MO", "NE", "ND", "OH", "SD", "WI"];
-        var west = ["AK", "AZ", "CA", "CO", "HI", "ID", "MT", "NM", "NV", "OR", "UT", "WY"];
+        var west = ["AK", "AZ", "CA", "CO", "HI", "ID", "MT", "NM", "NV", "OR", "UT", "WY", "WA"];
 
         $region.attr('disabled', 'disabled');
         $field_us_region.css("display", "none");
@@ -44,8 +44,8 @@
         $field_region_us.change(function() {
             if(this.checked) {
                 //Do stuff
-                $field_us_province_state.css("display", "block");
-                $field_us_region.css("display", "block");
+                $field_us_province_state.css("display", "inline-block!");
+                $field_us_region.css("display", "inline-block");
                 $field_canada_state_province.css("display", "none");
             }
         });
