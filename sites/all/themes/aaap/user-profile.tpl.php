@@ -82,6 +82,18 @@ $user = user_load(arg(1));
             ?>
             </div>
         </div>
+
+        <?php if(isset($user->field_us_region['und'][0]['value']) && isset($user->field_region['und'][0]['value'])): ?>
+            <?php if(!empty($user->field_us_region['und'][0]['value']) && $user->field_region['und'][0]['value'] == 'us'): ?>
+                <div class="field_custom_profile">
+                    <label>US Region:</label>
+                    <div class="value_custom_profile">
+                        <?php echo $user->field_us_region['und'][0]['value']; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
         <div class="field_custom_profile">
             <label>Work Phone: </label>
             <div class="value_custom_profile"><?php if(!empty($user_profile['field_office_telephone'])){print $user_profile['field_office_telephone']['#items'][0]['value'];}?></div>

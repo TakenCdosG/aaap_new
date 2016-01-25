@@ -28,7 +28,10 @@ if(SITE_NAME == 'AASA'){
         'directors' => t('Board of Directors'),
         'lapsed' => 'Lapsed Members'
     );
+<<<<<<< HEAD
 
+=======
+>>>>>>> 18645676a338f9d102101bead6b180f6bbef4397
 }
 
 function aaap_mass_menu(){

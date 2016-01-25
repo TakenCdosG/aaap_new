@@ -608,9 +608,13 @@ function aaap_event_registration($nid)
 
 function _render_event_webform($nid)
 {
-
-  $node = node_load($nid);
-  return node_view($node);
+    //$node = node_load($nid);
+    //return node_view($node);
+    $node = node_load($nid);
+    $render = node_view($node, 'full', NULL);
+    $from = render($render);
+    //dpm(array("from" => $from, "node" => $node));
+    return $from;
 }
 
 
