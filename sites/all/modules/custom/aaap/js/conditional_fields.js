@@ -38,7 +38,7 @@
         var midwest = ["IL", "IN", "IA", "KS", "MI", "MN", "MO", "NE", "ND", "OH", "SD", "WI"];
         var west = ["AK", "AZ", "CA", "CO", "HI", "ID", "MT", "NM", "NV", "OR", "UT", "WY", "WA"];
 
-        $region.attr('disabled', 'disabled');
+        //$region.attr('disabled', 'disabled');
         $field_us_region.css("display", "none");
         $field_state.css("display", "none");
         $field_us_state_province.css("display", "none");
