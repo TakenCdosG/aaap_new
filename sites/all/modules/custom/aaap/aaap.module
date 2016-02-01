@@ -360,6 +360,11 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
 
         unset($form['#metatags']);
         unset($form['redirect']);
+        if($form_id == 'user_register_form' || $form_id == 'user_profile_form'){
+            $form['#attached']['js'] = array(
+                drupal_get_path('module', 'aaap') . '/js/conditional_fields.js',
+            );
+        }
     }//end if
 
     if ($form_id == 'user_register_form') {
@@ -1186,4 +1191,26 @@ function set_status_invoice($key_id, $item_id, $new_status = 'completed')
     //dsm($key_id);
     //dsm($item_id);
     db_update('aaap_check_invoices')->fields(array('order_status' => $new_status, 'modified' => strtotime('now')))->condition('key_id', $key_id, '=')->condition('item_id', $item_id, '=')->execute();;
+}
+
+
+
+/*+
+* Preprocess the primary theme implementation for a view.
+ */
+
+function aaap_preprocess_views_view(&$variables){
+    if($variables['name'] == 'head_administrator_information' && $variables['display_id'] == 'page'){
+        drupal_add_css(drupal_get_path("module", "aaap") . '/css/responsive-tables.css');
+        drupal_add_js(drupal_get_path("module", "aaap") . '/js/responsive-tables.js', array('scope' => 'footer'));
+    }
+}
+
+function aaap_preprocess_views_view_table(&$vars){
+    //dpm($vars);
+    if(isset($vars['view']->name)){
+        if($vars['view']->name == 'head_administrator_information'){
+            $vars['classes_array'][] = 'table table-striped responsive flip-scroll';
+        }
+    }
 }
