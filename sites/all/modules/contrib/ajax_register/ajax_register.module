@@ -167,60 +167,90 @@ function ajax_register_menu_site_status_alter(&$menu_site_status, $path) {
 function ajax_register_form_alter(&$form, &$form_state, $form_id) {
 
   // Create array with enabled ajax links.
-  $enabled_links = array('login', 'register', 'password');
+  //$enabled_links = array('login', 'register', 'password');
+  $enabled_links = array('login');
 
   switch ($form_id) {
     case 'user_login_block':
+        $current_path = current_path();
+        $conference_path = "conference/*/registration";
+        if(drupal_match_path($current_path, $conference_path)){
+            // Include css and js for modal dialog.
+            _ajax_register_include_modal();
 
-      // Include css and js for modal dialog.
-      _ajax_register_include_modal();
+            // Add links processed with CTools modal.
+            $form['links'] = array(
+              '#theme' => 'item_list',
+              '#items' => _ajax_register_ajax_links($enabled_links, $form_id),
+              '#attributes' => array('class' => array('ajax-register-links')),
+            );
 
-      // Add links processed with CTools modal.
-      $form['links'] = array(
-        '#theme' => 'item_list',
-        '#items' => _ajax_register_ajax_links($enabled_links, $form_id),
-        '#attributes' => array('class' => array('ajax-register-links')),
-      );
+            // Add html wrapper to form and #ajax to form submit.
+            _ajax_register_add_ajax($form, $form_id);
 
-      // Add html wrapper to form and #ajax to form submit.
-      _ajax_register_add_ajax($form, $form_id);
-
-      // Do not add to the user login block anything more.
+            // Do not add to the user login block anything more.
+       }
       break;
 
     case 'user_login':
+         // Build classes for ajax modal link.
+        $classes = array();
+        $classes[] = 'ctools-use-modal';
+        $classes[] = 'ctools-modal-ctools-ajax-register-style';
+        $classes[] = 'text_login';
+        //Provide default options for ajax modal link.
+        $options = array(
+          'attributes' => array(
+            'class' => $classes,
+            'rel' => 'nofollow',
+          )
+        );
+        $options['attributes']['title'] = t('Request new password');
+        $form["pass"]["#suffix"] = l(t('Forgot password?'), 'ajax_register/password/nojs', $options);
+        $form["actions"]["cancel"] =  array('#markup' =>  "<a class='ctools-close-modal btn-ctools-close-modal close-modal' href='#' onclick=\"localStorage.setItem('proceed', 'proceed_as_non_member');\">Proceed as a Non-Member</a>");
     case 'user_pass':
     case 'user_register_form':
-
-      // Do not process form with AJAX that should be processed with CTools modal.
-      $modal_links_enabled = variable_get('ajax_register_form_enable_modal_links', TRUE);
-      if (!empty($form_state['ajax'])) {
-
-        // Include css and js for modal dialog.
-        _ajax_register_include_modal();
-
-        // Add links processed with CTools modal.
-        if ($modal_links_enabled) {
-          $form['links'] = array(
-            '#theme' => 'item_list',
-            '#items' => _ajax_register_ajax_links($enabled_links, $form_id),
-            '#attributes' => array('class' => array('ajax-register-links', 'inline')),
-            '#weight' => -200,
-            '#prefix' => '<div class="ajax-register-links-wrapper">',
-            '#suffix' => '</div>',
-          );
-        }
-
-        // Unset captcha from modal form.
-        $hide_captcha = variable_get('ajax_register_hide_captcha', FALSE);
-        if ($hide_captcha) {
-          unset($form['captcha']);
+      $enabled = FALSE;
+      $current_path = current_path();
+      $allowed_paths = array("conference/*", "ajax_register/login/ajax");
+      foreach ($allowed_paths as $key => $path ){
+        if(drupal_match_path($current_path, $path)){
+            $enabled = TRUE;
         }
       }
-      else {
-        // Add html wrapper to form and #ajax to form submit.
-        _ajax_register_add_ajax($form, $form_id);
-      }
+      
+      if($enabled){   
+            // Do not process form with AJAX that should be processed with CTools modal.
+            $modal_links_enabled = variable_get('ajax_register_form_enable_modal_links', TRUE);
+            if (!empty($form_state['ajax'])) {
+
+              // Include css and js for modal dialog.
+              _ajax_register_include_modal();
+
+              // Add links processed with CTools modal.
+              if ($modal_links_enabled) {
+                $msg = '<div class="messages_status">AASA MEMBERS: To ensure you receive the discounted member rate, please sign in prior to completing your registration.</div>';
+                $form['links'] = array(
+                  '#theme' => 'item_list',
+                  '#items' => _ajax_register_ajax_links($enabled_links, $form_id),
+                  '#attributes' => array('class' => array('ajax-register-links', 'inline')),
+                  '#weight' => -200,
+                  '#prefix' => '<div class="ajax-register-links-wrapper">'.$msg,
+                  '#suffix' => '</div>',
+                );
+              }
+
+              // Unset captcha from modal form.
+              $hide_captcha = variable_get('ajax_register_hide_captcha', FALSE);
+              if ($hide_captcha) {
+                unset($form['captcha']);
+              }
+            }
+            else {
+              // Add html wrapper to form and #ajax to form submit.
+              _ajax_register_add_ajax($form, $form_id);
+            }
+      }  
   }
 }
 
@@ -301,6 +331,7 @@ function _ajax_register_execute_form($form_type, $form_state) {
   ctools_include('modal');
   $redirect_behavior = variable_get('ajax_register_' . $form_type . '_redirect_behavior', 'default');
   $redirect_url = variable_get('ajax_register_' . $form_type . '_redirect_url', '');
+  
   // Use the form state's redirect url for default behavior.
   if ($redirect_behavior == 'default' && !empty($form_state['redirect'])) {
     if (is_array($form_state['redirect'])) {
@@ -396,14 +427,23 @@ function _ajax_register_ajax_links($links_enabled, $form_id = NULL) {
   // Add login button.
   if (in_array('login', $links_enabled) && (stripos($form_id, 'user_login') === FALSE)) {
     $options['attributes']['title'] = t('Login');
+    $options['attributes']['class'][] = 'login';
     $links[] = l(t('Login'), 'ajax_register/login/nojs', $options);
   }
-
+  $options = array(
+    'attributes' => array(
+      'class' => $classes,
+      'rel' => 'nofollow',
+    )
+  );
   // Add register button.
+  $path = current_path();
   $user_registration_allowed = variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL);
   if (in_array('register', $links_enabled) && $form_id != 'user_register_form' && $user_registration_allowed) {
-    $options['attributes']['title'] = t('Create new account');
-    $links[] = l(t('Create new account'), 'ajax_register/register/nojs', $options);
+    $options['attributes']['title'] = t('Become a Member');
+    $new_options['attributes']['title'] = $options['attributes']['title'];
+    $links[] = l(t('Become a Member'), '/user/register', $new_options);
+    //$links[] = l(t('Become a Member'), 'ajax_register/register/nojs', $options);
   }
 
   // Add request password button.
