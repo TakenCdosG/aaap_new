@@ -380,6 +380,30 @@ function aaap_events_form_alter(&$form, &$form_state, $form_id){
 
     }
 
+    if (isset($form['#node']->type) && isset($form['submitted'])) {
+        if ($form['#node']->type == "event") {
+            $user_is_logged_in = user_is_logged_in();
+            // +==========================================================+
+            // | Require users to login first before Event Registration.  |
+            // +==========================================================+
+            if (isset($form['#node']->field_require_users_to_login['und'][0]['value'])) {
+                $field_require_users_to_login = $form['#node']->field_require_users_to_login['und'][0]['value'];
+                if ($field_require_users_to_login == "1") {
+
+                    $path_to_css = drupal_get_path('module', 'aaap_events') . '/css/webform.css';
+                    $path_to_js = drupal_get_path('module', 'aaap_events') . '/js/webform.js';
+
+                    $form['#attached']['css'][1] = $path_to_css;
+                    $form['#attached']['js'][1] = $path_to_js;
+                    $form['#attributes']['class'][] = "formulario-events";
+
+                    $block = block_load('ajax_register', 'ajax_register_block');
+                    $ajax_register_block = render(_block_get_renderable_array( _block_render_blocks(array($block))));
+                    $form['#prefix'] = $ajax_register_block;
+                }
+            }
+        }
+    }
 
 }
 
@@ -535,7 +559,7 @@ function export_submissions_to_csv($node) {
 
     $options = array(
         'delimiter' => ',',
-        'components' => array('time', '1','2','3','4','5','6','7','8','9','10','11','12','13', '21', '25', '14', '16', '29', '63', '15', '19','27'),
+        'components' => array('time', '1','2','3','4','5','6','7','8','9','10','11','12','13', '21', '25', '14', '16', '29', '63', '15', '19','27', '30', '31'),
         'select_keys' => 0,
         'select_format' => 'separate',
         'range_type' => 'range',
