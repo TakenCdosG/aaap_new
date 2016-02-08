@@ -402,6 +402,10 @@ function aaap_events_form_alter(&$form, &$form_state, $form_id){
                     $form['#prefix'] = $ajax_register_block;
                 }
             }
+            // Default State for user on event
+            if($user_is_logged_in){
+                dpm($form);
+            }
         }
     }
 
