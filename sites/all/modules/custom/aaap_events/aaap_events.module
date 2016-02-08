@@ -404,7 +404,24 @@ function aaap_events_form_alter(&$form, &$form_state, $form_id){
             }
             // Default State for user on event
             if($user_is_logged_in){
-                dpm($form);
+                $current_user = user_load($user->uid);
+                $region = "";
+                $default_value = "";
+                if(isset($current_user->field_region['und'][0]['value'])){
+                    $region = $current_user->field_region['und'][0]['value'];
+                }
+                if($region == 'us'){
+                    if(isset($current_user->field_us_province_state['und'][0]['value'])){
+                        $default_value = $current_user->field_us_province_state['und'][0]['value'];
+                    }
+                }
+                if($region == 'canada'){
+                    if(isset($current_user->field_canada_state_province['und'][0]['value'])){
+                        $default_value = $current_user->field_canada_state_province['und'][0]['value'];
+                    }
+                }
+                $form['submitted']['state_province']['#default_value'] = $default_value;
+                //dpm($form);
             }
         }
     }
