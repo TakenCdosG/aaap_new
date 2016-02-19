@@ -6,6 +6,8 @@ files/
 sites/*/files
 sites/*/private
 
+
+
 # Ignore default text files
 robots.txt
 /CHANGELOG.txt
@@ -20,7 +22,7 @@ sites/all/modules/README.txt
 sites/all/themes/README.txt
 
 
-
+.htaccess
 
 # ignore all files starting with . or ~
 .*
@@ -59,8 +61,10 @@ Thumbs.db
 *.jar
 *.rar
 *.tar
+/sites/all/modules/config/config.php
 *.zip
 
 
 # programs
+
 .idea
