@@ -521,15 +521,21 @@ function _ap_get_final_price($event, $submission){
     //add guests fees to the final price
     $guests_number = $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0];
     $guests_price = $event->field_fee_for_guests['und'][0]['value'];
+    $price_guests = 0;
     if (is_numeric($guests_number) && is_numeric($price)){
         if($guests_number > 0){
-            $price += $guests_number * $price;
+            $price_guests = $guests_number * $price;
         }    
     }
     //$price += _ap_get_guests_fee($submission,$event);
-
+    $price += $price_guests;
+    die(var_dump(array(
+        'price' => $price,
+        'guests_number' => $guests_number,
+        'price_guests' => $price_guests,
+        )));
     return $price;
-    
+
 }
 
 function  _get_user_submission($submissions, $email){
