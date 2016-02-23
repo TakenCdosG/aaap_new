@@ -524,19 +524,19 @@ function _ap_get_final_price($event, $submission){
     $price_guests = 0;
     if (is_numeric($guests_number) && is_numeric($price)){
         if($guests_number > 0){
-            $price_guests = $guests_number * $price;
+            $price_guests = $guests_number * $guests_price;
         }    
     }
     //$price += _ap_get_guests_fee($submission,$event);
     $price += $price_guests;
-    die(var_dump(array(
+    /*die(var_dump(array(
         'price' => $price,
         'guests_number' => $guests_number,
         'guests_price' => $guests_price,
         'price_guests' => $price_guests,
         'field_member_registration_fee' => $event->field_member_registration_fee['und'][0]['value'],
         'field_non_member_registration_fe' => $event->field_non_member_registration_fe['und'][0]['value'],
-        )));
+        )));*/
     return $price;
 
 }
