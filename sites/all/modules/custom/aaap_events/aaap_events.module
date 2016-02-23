@@ -532,7 +532,7 @@ function _ap_get_final_price($event, $submission){
     die(var_dump(array(
         'price' => $price,
         'guests_number' => $guests_number,
-        'guests_price' => $guests_price
+        'guests_price' => $guests_price,
         'price_guests' => $price_guests,
         'field_member_registration_fee' => $event->field_member_registration_fee['und'][0]['value'],
         'field_non_member_registration_fe' => $event->field_non_member_registration_fe['und'][0]['value'],
