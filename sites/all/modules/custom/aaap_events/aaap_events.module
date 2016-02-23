@@ -496,7 +496,7 @@ function _ap_get_guests_fee($submission, $event){
             return 0;
     }
     elseif(SITE_NAME == 'AAAP'){
-
+        
         if(!empty($submission->data[EVENT_TYPE_OF_GUEST][0])){
             //dsm($submission->data[EVENT_TYPE_OF_GUEST][0]);
             if ($submission->data[EVENT_TYPE_OF_GUEST][0] == 'first_option') {
@@ -512,7 +512,6 @@ function _ap_get_guests_fee($submission, $event){
 function _ap_get_final_price($event, $submission){
 
     $price = 0;
-
     if(_ap_is_active_member(true)){
         $price = $event->field_member_registration_fee['und'][0]['value'];
     }else{
@@ -520,9 +519,17 @@ function _ap_get_final_price($event, $submission){
     }
 
     //add guests fees to the final price
-    $price += _ap_get_guests_fee($submission,$event);
+    $guests_number = $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0];
+    $guests_price = $event->field_fee_for_guests['und'][0]['value'];
+    if (is_numeric($guests_number) && is_numeric($price)){
+        if($guests_number > 0){
+            $price += $guests_number * $price;
+        }    
+    }
+    //$price += _ap_get_guests_fee($submission,$event);
 
     return $price;
+    
 }
 
 function  _get_user_submission($submissions, $email){
