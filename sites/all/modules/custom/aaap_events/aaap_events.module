@@ -387,25 +387,45 @@ function aaap_events_form_alter(&$form, &$form_state, $form_id){
   if (isset($form['#node']->type) && isset($form['submitted'])) {
     if ($form['#node']->type == "event") {
       $user_is_logged_in = user_is_logged_in();
-
-      //  +==========================================================+
-      //  | Require users to login first before Event Registration.  |
-      //  +==========================================================+
+      // +==========================================================+
+      // | Require users to login first before Event Registration.  |
+      // +==========================================================+
       if (isset($form['#node']->field_require_users_to_login['und'][0]['value'])) {
         $field_require_users_to_login = $form['#node']->field_require_users_to_login['und'][0]['value'];
         if ($field_require_users_to_login == "1") {
 
-          $path_to_css = drupal_get_path('module', 'aaap_events') . '/css/webform.css';
-          $path_to_js = drupal_get_path('module', 'aaap_events') . '/js/webform.js';
+            $path_to_css = drupal_get_path('module', 'aaap_events') . '/css/webform.css';
+            $path_to_js = drupal_get_path('module', 'aaap_events') . '/js/webform.js';
 
-          $form['#attached']['css'][1] = $path_to_css;
-          $form['#attached']['js'][1] = $path_to_js;
-          $form['#attributes']['class'][] = "formulario-events";
+            $form['#attached']['css'][1] = $path_to_css;
+            $form['#attached']['js'][1] = $path_to_js;
+            $form['#attributes']['class'][] = "formulario-events";
 
-          $block = block_load('ajax_register', 'ajax_register_block');
-          $ajax_register_block = render(_block_get_renderable_array( _block_render_blocks(array($block))));
-          $form['#prefix'] = $ajax_register_block;
+            $block = block_load('ajax_register', 'ajax_register_block');
+            $ajax_register_block = render(_block_get_renderable_array( _block_render_blocks(array($block))));
+            $form['#prefix'] = $ajax_register_block;
         }
+      }
+      // Default State for user on event
+      if($user_is_logged_in){
+        $current_user = user_load($user->uid);
+        $region = "";
+        $default_value = "";
+        if(isset($current_user->field_region['und'][0]['value'])){
+            $region = $current_user->field_region['und'][0]['value'];
+        }
+        if($region == 'us'){
+            if(isset($current_user->field_us_province_state['und'][0]['value'])){
+                $default_value = $current_user->field_us_province_state['und'][0]['value'];
+            }
+        }
+        if($region == 'canada'){
+            if(isset($current_user->field_canada_state_province['und'][0]['value'])){
+                $default_value = $current_user->field_canada_state_province['und'][0]['value'];
+            }
+        }
+        $form['submitted']['state_province']['#default_value'] = $default_value;
+        //dpm($form);
       }
     }
   }
@@ -470,43 +490,57 @@ function cancel_cart($form, &$form_state) {
 
 
 function _ap_get_guests_fee($submission, $event){
-  $guests_number = $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0];
-  if(SITE_NAME == 'AASA') {
+    $guests_number = $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0];
+    if(SITE_NAME == 'AASA') {
 
-    $price = $event->field_fee_for_guests['und'][0]['value'];
-    if (is_numeric($guests_number) && is_numeric($price))
-      return $guests_number * $price;
-    else
-      return 0;
-  }
-  elseif(SITE_NAME == 'AAAP'){
-
-    if(!empty($submission->data[EVENT_TYPE_OF_GUEST][0])){
-      //dsm($submission->data[EVENT_TYPE_OF_GUEST][0]);
-      if ($submission->data[EVENT_TYPE_OF_GUEST][0] == 'first_option') {
-        return 220*$guests_number;
-      } elseif($submission->data[EVENT_TYPE_OF_GUEST][0] == 'second_option') {
-        return 400*$guests_number;
-      }
+        $price = $event->field_fee_for_guests['und'][0]['value'];
+        if (is_numeric($guests_number) && is_numeric($price))
+            return $guests_number * $price;
+        else
+            return 0;
     }
-  }
+    elseif(SITE_NAME == 'AAAP'){
+        if(!empty($submission->data[EVENT_TYPE_OF_GUEST][0])){
+            //dsm($submission->data[EVENT_TYPE_OF_GUEST][0]);
+            if ($submission->data[EVENT_TYPE_OF_GUEST][0] == 'first_option') {
+                return 220*$guests_number;
+            } elseif($submission->data[EVENT_TYPE_OF_GUEST][0] == 'second_option') {
+                return 400*$guests_number;
+            }
+        }
+    }
 }
 
 
 function _ap_get_final_price($event, $submission){
 
-  $price = 0;
+    $price = 0;
+    if(_ap_is_active_member(true)){
+        $price = $event->field_member_registration_fee['und'][0]['value'];
+    }else{
+        $price = $event->field_non_member_registration_fe['und'][0]['value'];
+    }
 
-  if(_ap_is_active_member(true)){
-    $price = $event->field_member_registration_fee['und'][0]['value'];
-  }else{
-    $price = $event->field_non_member_registration_fe['und'][0]['value'];
-  }
-
-  //add guests fees to the final price
-  $price += _ap_get_guests_fee($submission,$event);
-
-  return $price;
+    //add guests fees to the final price
+    $guests_number = $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0];
+    $guests_price = $event->field_fee_for_guests['und'][0]['value'];
+    $price_guests = 0;
+    if (is_numeric($guests_number) && is_numeric($price)){
+        if($guests_number > 0){
+            $price_guests = $guests_number * $guests_price;
+        }    
+    }
+    //$price += _ap_get_guests_fee($submission,$event);
+    $price += $price_guests;
+    /*die(var_dump(array(
+        'price' => $price,
+        'guests_number' => $guests_number,
+        'guests_price' => $guests_price,
+        'price_guests' => $price_guests,
+        'field_member_registration_fee' => $event->field_member_registration_fee['und'][0]['value'],
+        'field_non_member_registration_fe' => $event->field_non_member_registration_fe['und'][0]['value'],
+        )));*/
+    return $price;
 }
 
 function  _get_user_submission($submissions, $email){
@@ -564,12 +598,12 @@ function export_submissions_to_csv($node) {
   }
 
   $options = array(
-    'delimiter' => ',',
-    'components' => array('time', '1','2','3','4','5','6','7','8','9','10','11','12','13', '21', '25', '14', '16', '29', '63', '15', '19','27', '30', '31'),
-    'select_keys' => 0,
-    'select_format' => 'separate',
-    'range_type' => 'range',
-    'download' => TRUE,
+      'delimiter' => ',',
+      'components' => array('time', '1','2','3','4','5','6','7','8','9','10','11','12','13', '21', '25', '14', '16', '29', '63', '15', '19','27', '30', '31'),
+      'select_keys' => 0,
+      'select_format' => 'separate',
+      'range_type' => 'range',
+      'download' => TRUE,
   );
 
   // Retrieve the list of required SIDs.
