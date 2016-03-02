@@ -1130,7 +1130,7 @@ tr.even, tr.odd{
     float: left;
     width: 931px;
     padding: 20px 25px;
-    height: 204px;
+    height: auto;
 }
 .view-eventes.view-display-id-page .views-row-odd{
     background-color: #F3F1EB;
