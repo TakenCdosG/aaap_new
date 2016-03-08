@@ -199,6 +199,33 @@ function aaap_events_webform_submission_presave($node, &$submission) {
   }
 }
 
+/**
+ * Implements hook_uc_payment_entered().
+ */
+function aaap_events_uc_payment_entered($order, $method, $amount, $account, $data, $comment){
+    // Ensure order status is updated to complete after payment entered. 
+    $do = FALSE;
+    if(isset($order->products)){
+        foreach ($order->products as $key => $product) {
+            if(isset($product->nid)){
+                $nid = $product->nid;
+            $result = db_select('node', 'n')
+                        ->fields('n', array('type'))
+                        ->condition('nid', $nid,'=')
+                        ->execute()
+                        ->fetchAssoc();
+                 if(isset($result['type'])){
+                    if($result['type'] == 'event'){
+                        $do = TRUE;
+                    }  
+                 }       
+            }
+        }
+    }
+    if($do){
+        rules_invoke_event('uc_payment_entered', $order, $account);
+    }
+}
 
 function aaap_events_uc_checkout_complete($order, $account){
 
