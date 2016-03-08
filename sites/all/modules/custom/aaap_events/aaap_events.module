@@ -737,6 +737,21 @@ function _guest_option_readable($option){
 
 }
 
+function clean_duplicate_submission($submissions){
+    $group_by_mail = array();
+    $temporal_submissions = array();
+    foreach ($submissions as $key => $submission) {
+        if(isset($submission->data[12][0])){
+            $email = $submission->data[12][0];
+            if(!in_array($email, $group_by_mail)){
+                $temporal_submissions[$key] = $submission;
+                $group_by_mail[] = $email;
+            }
+        }
+    }
+    return $temporal_submissions;
+}
+
 function _render_event_report($nid)
 {
   global $user;
@@ -749,8 +764,9 @@ function _render_event_report($nid)
     //$pager_count = ?? //TODO: fix this :)
   }
 
-  $node = node_load($nid);
-  $submissions = webform_get_submissions($nid);
+    $node = node_load($nid);
+    $submissions = webform_get_submissions($nid);
+    $submissions = clean_duplicate_submission($submissions);
 
 
   if (isset($_GET['filter'])) {//TODO: validate filter
