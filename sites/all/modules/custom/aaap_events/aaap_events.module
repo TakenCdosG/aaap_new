@@ -199,6 +199,33 @@ function aaap_events_webform_submission_presave($node, &$submission) {
     }
 }
 
+/**
+ * Implements hook_uc_payment_entered().
+ */
+function aaap_events_uc_payment_entered($order, $method, $amount, $account, $data, $comment){
+    // Ensure order status is updated to complete after payment entered. 
+    $do = FALSE;
+    if(isset($order->products)){
+        foreach ($order->products as $key => $product) {
+            if(isset($product->nid)){
+                $nid = $product->nid;
+            $result = db_select('node', 'n')
+                        ->fields('n', array('type'))
+                        ->condition('nid', $nid,'=')
+                        ->execute()
+                        ->fetchAssoc();
+                 if(isset($result['type'])){
+                    if($result['type'] == 'event'){
+                        $do = TRUE;
+                    }  
+                 }       
+            }
+        }
+    }
+    if($do){
+        rules_invoke_event('uc_payment_entered', $order, $account);
+    }
+}
 
 function aaap_events_uc_checkout_complete($order, $account){
 
@@ -735,6 +762,21 @@ function _guest_option_readable($option){
 
 }
 
+function clean_duplicate_submission($submissions){
+    $group_by_mail = array();
+    $temporal_submissions = array();
+    foreach ($submissions as $key => $submission) {
+        if(isset($submission->data[12][0])){
+            $email = $submission->data[12][0];
+            if(!in_array($email, $group_by_mail)){
+                $temporal_submissions[$key] = $submission;
+                $group_by_mail[] = $email;
+            }
+        }
+    }
+    return $temporal_submissions;
+}
+
 function _render_event_report($nid)
 {
     global $user;
@@ -749,6 +791,7 @@ function _render_event_report($nid)
 
     $node = node_load($nid);
     $submissions = webform_get_submissions($nid);
+    $submissions = clean_duplicate_submission($submissions);
 
 
     if (isset($_GET['filter'])) {//TODO: validate filter
