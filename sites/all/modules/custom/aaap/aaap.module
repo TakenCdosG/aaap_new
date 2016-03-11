@@ -301,6 +301,11 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
         if (!isset($_SESSION)) {
             $_SESSION = array();
         }
+
+        if (isset($user->uid)) {
+            $form['#token'] = FALSE;
+        }  
+        
     }
 
 
