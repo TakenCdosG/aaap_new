@@ -306,6 +306,8 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
             $form['#token'] = FALSE;
         }  
         
+        $form['#token'] = FALSE;
+
     }
 
 
