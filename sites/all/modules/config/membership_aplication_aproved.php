@@ -18,7 +18,7 @@ mail($edit['mail'], SITE_NAME.' Membership Application Approved; Pending Payment
 .'Zip/Postal Code: '.$user_data->field_zip['und'][0]['value']. "\r\n \r\n"
 .'Make a Credit Card Payment:'. "\r\n"
 .$onetime. "\r\n \r\n"
-.'If you have any questions please contact our AAAP Membership Director Michelle De Guire: mdeguire@ucsd.edu'. "\r\n"
+.'If you have any questions please contact our AAAP Membership Director Michelle De Guire: mdeguire@ucsd.edu'. "\r\n \r\n"
 .'Thank you,'. "\r\n"
 .SITE_NAME, HEADERS);
 
