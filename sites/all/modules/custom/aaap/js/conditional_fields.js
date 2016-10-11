@@ -22,6 +22,7 @@
         var $field_region_canada = $('#edit-field-region #edit-field-region-und-canada', $form);
         var $field_canada_state_province = $('#edit-field-canada-state-province', $form);
         var $field_attach_und_yes = $('#edit-field-attach-und-yes', $form);
+        var $field_attach_und_no = $('#edit-field-no-attach-und-no', $form);
         var $region_head_administrator = $('.head-administrator', $form);
         var $field_institution = $('#edit-field-institution-und-0-value', $form);
         var $field_ha_institution = $('#edit-field-institution-name-und-0-value', $form);
@@ -105,6 +106,7 @@
             if(this.checked) {
                 //Do stuff
                 $region_head_administrator.css("display", "block");
+                $field_attach_und_no.unchecked();
             }else{
                 $region_head_administrator.css("display", "none");
             }

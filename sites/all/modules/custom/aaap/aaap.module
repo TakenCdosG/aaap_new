@@ -251,7 +251,7 @@ function aaap_globals($arg)
 function aaap_form_alter(&$form, &$form_state, $form_id)
 {
     global $user;
-    //dsm($form);
+    //dsm($form_id);
 
 
     // Don't alter the normal profile edit form, but only the password reset form.
@@ -310,6 +310,9 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
 
 
     if ($form_id == 'user_register_form' or $form_id == 'user_profile_form') {
+
+        dsm($form_state);
+
          $form['#attributes']['autocomplete'] = 'off';
 
 //        add question above checkbox
@@ -370,11 +373,10 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
                 drupal_get_path('module', 'aaap') . '/js/conditional_fields.js',
             );
         }
+        array_unshift($form['#validate'], 'head_administrator_validate');
     }//end if
 
     if ($form_id == 'user_register_form') {
-
-        dsm($form);
 
         if (!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)) {
             $form['field_new_or_renewal']['#prefix'] = '<div class="custom_legend">MEMBERSHIP INFORMATION</div>';
@@ -434,7 +436,6 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
         $form['pass']['#suffix'] = '<a href="/user/password" class="text_login">Forgot password?</a>';
     }
 
-
 }
 
 /**
@@ -454,6 +455,18 @@ function aaap_form_user_profile_form_alter(&$form, &$form_state)
     $form['account']['current_pass_required_value']['#access'] = FALSE;
     $form['account']['current_pass']['#access'] = FALSE;
 
+
+}
+
+function head_administrator_validate($form, &$form_state){
+    dsm($form_state);
+    if(!($form_state['values']['field_attach']['und'][0]['value']== 'yes' or $form_state['values']['field_no_attach']['und'][0]['value']== 'no')){
+        form_set_error('field_attach', 'Answer this question : Are you the head administrator of your department?');
+    }
+
+    if($form_state['values']['field_no_attach']['und'][0]['value'] == 'no' and $form_state['values']['field_head_admin_info']['und'][0]['field_email_head_admin']['und'][0]['email'] == ''){
+        form_set_error('field_email_head_admin ', 'Email of head administrator field is required');
+    }
 
 }
 
