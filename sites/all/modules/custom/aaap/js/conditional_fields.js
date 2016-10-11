@@ -112,6 +112,16 @@
             }
         });
 
+        $('#edit-field-medical-school-select-und').change(function(){
+            //alert($(this).find(':selected').attr('data-name'));
+            var name = $(this).find(':selected').attr('data-name');
+            var email = $(this).find(':selected').attr('data-email');
+            $('#edit-field-name-of-chairman-und-0-value').val(name);
+            $('#edit-field-name-of-chairman-und-0-value').val(email);
+        }
+
+        );
+
         if ($field_attach_und_yes.is(':checked')) {
             $region_head_administrator.css("display", "block");
         }else{

@@ -1460,8 +1460,6 @@ tr.even, tr.odd{
 
 h2.title.comment-form{
     margin-top: 30px;
-<<<<<<< HEAD
-=======
 }
 
 .head-administrator{
@@ -1669,5 +1667,5 @@ table.responsive td, table.responsive th {
     .flip-scroll ::-webkit-scrollbar-thumb:window-inactive {
         background: rgba(255,0,0,0.4);
     }
->>>>>>> 18645676a338f9d102101bead6b180f6bbef4397
+
 }
