@@ -474,18 +474,18 @@ function head_administrator_validate($form, &$form_state){
  * Implements hook_theme_registry_alter().
  */
 function aaap_theme_registry_alter(&$theme_registry) {
+
     $theme_registry['select']['function'] = 'form_options_attributes_select';
 }
 
 function form_options_attributes_select($variables) {
 
-    if($variables['element']['#field_name'] == 'field_medical_school_select'){
         $element = $variables['element'];
         element_set_attributes($element, array('id', 'name', 'size'));
         _form_set_class($element, array('form-select'));
 
         return '<select' . drupal_attributes($element['#attributes']) . '> ' . form_options_attributes_form_select_options($element) . '</select>';
-    }
+
 }
 
 /**
@@ -508,14 +508,39 @@ function form_options_attributes_form_select_options($element, $choices = NULL) 
     if (!isset($choices)) {
         $choices = $element['#options'];
     }
-    dsm($choices);
+    // array_key_exists() accommodates the rare event where $element['#value'] is NULL.
+    // isset() fails in this situation.
+    $value_valid = isset($element['#value']) || array_key_exists('#value', $element);
+    $value_is_array = $value_valid && is_array($element['#value']);
     $options = '';
     foreach ($choices as $key => $choice) {
 
-        $keyExploded = explode(' | ',$key);
-        $choice = str_replace(' ','',$choice);
+        if($element['#field_name'] == 'field_medical_school_select'){
+            $keyExploded = explode(' | ',$key);
+            $choice = str_replace(' ','',$choice);
 
             $options .= '<option value="'. check_plain($key) .'" data-email="'.check_plain($choice).'" data-name="'.$keyExploded[0].'">'. $keyExploded[1].'</option>';
+        }else{
+            if (is_array($choice)) {
+                $options .= '<optgroup label="' . check_plain($key) . '">';
+                $options .= form_select_options($element, $choice);
+                $options .= '</optgroup>';
+            }
+            elseif (is_object($choice)) {
+                $options .= form_select_options($element, $choice->option);
+            }
+            else {
+                $key = (string) $key;
+                if ($value_valid && (!$value_is_array && (string) $element['#value'] === $key || ($value_is_array && in_array($key, $element['#value'])))) {
+                    $selected = ' selected="selected"';
+                }
+                else {
+                    $selected = '';
+                }
+                $options .= '<option value="' . check_plain($key) . '"' . $selected . '>' . check_plain($choice) . '</option>';
+            }
+        }
+
 
     }
     return $options;
