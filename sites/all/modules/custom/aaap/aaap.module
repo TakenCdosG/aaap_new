@@ -311,8 +311,7 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
 
     if ($form_id == 'user_register_form' or $form_id == 'user_profile_form') {
 
-        dsm($form_state);
-
+        dsm($form);
          $form['#attributes']['autocomplete'] = 'off';
 
 //        add question above checkbox
@@ -459,13 +458,13 @@ function aaap_form_user_profile_form_alter(&$form, &$form_state)
 }
 
 function head_administrator_validate($form, &$form_state){
-    dsm($form_state);
+
     if(!($form_state['values']['field_attach']['und'][0]['value']== 'yes' or $form_state['values']['field_no_attach']['und'][0]['value']== 'no')){
         form_set_error('field_attach', 'Answer this question : Are you the head administrator of your department?');
     }
 
     if($form_state['values']['field_no_attach']['und'][0]['value'] == 'no' and $form_state['values']['field_head_admin_info']['und'][0]['field_email_head_admin']['und'][0]['email'] == ''){
-        form_set_error('field_email_head_admin ', 'Email of head administrator field is required');
+        form_set_error("field_head_admin_info']['und'][0]['field_email_head_admin]['und'][0]['email", 'Email of head administrator field is required');
     }
 
 }
