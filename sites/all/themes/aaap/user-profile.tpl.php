@@ -53,10 +53,12 @@ dsm($user);
             <label>Email: </label>
             <div class="value_custom_profile"><a href="mailto:<?php print $user->mail;?>" target="_blank"><?php print $user->mail;?></a></div>
         </div>
+        <?php if(!empty($user->field_became_aaap_member)){ ?>
         <div class="field_custom_profile">
             <label>Became AAAP Member: </label>
             <div class="value_custom_profile"><?php print $user->field_became_aaap_member['und'][0]['value'];?></div>
         </div>
+        <?php } ?>
         <div class="field_custom_profile address one">
             <label>Address: </label>
             <div class="value_custom_profile"><?php if(!empty($user_profile['field_address_line_1'])){print $user_profile['field_address_line_1']['#items'][0]['value'];}?></div>
