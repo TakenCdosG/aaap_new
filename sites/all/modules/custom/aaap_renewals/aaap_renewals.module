@@ -14,6 +14,10 @@ function aaap_renewals_menu(){
         'page callback' => 'renewal_membership_link_login_callback',
         'access callback' => TRUE
     );
+    $items['add-membership-renewal-product-to-cart'] = array(
+        'page callback' => 'add_membership_renewal_product_to_cart_callback',
+        'access callback' => TRUE
+    );
     $items['renewal_period_ends_callback'] = array(
         'page callback' => 'renewal_period_ends_callback',
         'access callback' => TRUE
@@ -313,14 +317,25 @@ function get_price($user){
 }
 
 function renewal_membership_link_login_callback(){
-
+    global $user;
     if(user_is_logged_in()){
 //        dsm('entro');
         if(!renewal_membership_access_helper()){
             drupal_goto(INVALID_RENEWAL, array('absolute' => true));
         }
+        drupal_session_start();
+        $_SESSION['renewal_status'] = "goEditUser";
+        drupal_goto('user/'.$user->uid.'/edit',array('query'=>array('destination'=>'add-membership-renewal-product-to-cart')));
 
-        global $user;
+    }else{
+        drupal_goto('user',array('query'=>array('destination'=>'renewal-membership')));
+        }
+}
+
+function add_membership_renewal_product_to_cart_callback(){
+    global $user;
+    if($_SESSION['renewal_status'] == 'addMembershipRenewalProductToCart'){
+        $_SESSION['renewal_status'] = 'avoid';
         $user = user_load($user->uid);
         $user->field_created_by['und'][0]['value']= 'ubertcard';
         user_save($user);
@@ -331,10 +346,11 @@ function renewal_membership_link_login_callback(){
         uc_cart_empty(uc_cart_get_id());
         uc_cart_add_item(PRODUCT_MEMBERSHIP_RENEWAL_ID, $qty = 1, $data = NULL, $cid = NULL, $msg = TRUE, $check_redirect = TRUE, $rebuild = TRUE);
         drupal_goto('cart/checkout');
-
     }else{
-        drupal_goto('user',array('query'=>array('destination'=>'renewal-membership')));
-        }
+        drupal_goto(INVALID_RENEWAL, array('absolute' => true));
+    }
+
+
 }
 
 function renewal_send_reminder_emails_callback(){
