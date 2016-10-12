@@ -36,7 +36,7 @@
 ?>
 <?php
 $user = user_load(arg(1));
-dsm($user);
+//dsm($user);
 ?>
 <div class="user_custom_profile profile"<?php print $attributes; ?>>
     <div class="user_name"><?php if(!empty($user_profile['field_first_name'])){print $user_profile['field_first_name']['#items'][0]['value'];} if(!empty($user_profile['field_last_name'])){print " ".$user_profile['field_last_name']['#items'][0]['value'];} ?></div>
