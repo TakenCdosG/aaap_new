@@ -519,6 +519,8 @@ function form_options_attributes_form_select_options($element, $choices = NULL) 
         if($element['#field_name'] == 'field_medical_school_select'){
 
             $choices_sort_alphabetically = array();
+
+            //refactoring the array before sort
             foreach ($choices as $key => $choice) {
                 $keyExploded = explode(' | ', $key);
                 $choice = str_replace(' ', '', $choice);
@@ -532,9 +534,22 @@ function form_options_attributes_form_select_options($element, $choices = NULL) 
 
             $choices_sort_alphabetically = array_sort_by_key($choices_sort_alphabetically,'data-option');
 
-            $other = $choices_sort_alphabetically['other'];
-            unset($choices_sort_alphabetically['other']);
-            $choices_sort_alphabetically['other'] = $other;
+            // add 'other' option to the end of the select after sort
+            $other = $choices_sort_alphabetically['Other '];
+            unset($choices_sort_alphabetically['Other ']);
+            $choices_sort_alphabetically['Other '] = $other;
+
+
+            //add 'select' word and the beginning
+
+            $select = $choices_sort_alphabetically['Select '];
+            $select['data-name'] = '';
+            $select['data-email'] = '';
+            $select['value'] = '';
+            unset($choices_sort_alphabetically['Select ']);
+            array_unshift($choices_sort_alphabetically, $select);
+
+            dsm($choices_sort_alphabetically);
 
             foreach ($choices_sort_alphabetically as $key => $choice) {
                 $options .= '<option value="' . check_plain($choice['value']) . '" data-email="' . check_plain($choice['data-email']) . '" data-name="' . check_plain($choice['data-name']) . '">' . check_plain($choice['data-option']) . '</option>';
