@@ -507,41 +507,55 @@ function form_options_attributes_form_select_options($element, $choices = NULL) 
     if (!isset($choices)) {
         $choices = $element['#options'];
     }
+
     // array_key_exists() accommodates the rare event where $element['#value'] is NULL.
     // isset() fails in this situation.
     $value_valid = isset($element['#value']) || array_key_exists('#value', $element);
     $value_is_array = $value_valid && is_array($element['#value']);
     $options = '';
-    foreach ($choices as $key => $choice) {
+
+
 
         if($element['#field_name'] == 'field_medical_school_select'){
-            $keyExploded = explode(' | ',$key);
-            $choice = str_replace(' ','',$choice);
 
-            $options .= '<option value="'. check_plain($key) .'" data-email="'.check_plain($choice).'" data-name="'.$keyExploded[0].'">'. $keyExploded[1].'</option>';
+            $choices_sort_alphabetically = array();
+            foreach ($choices as $key => $choice) {
+                $keyExploded = explode(' | ', $key);
+                $choice = str_replace(' ', '', $choice);
+
+                $choices_sort_alphabetically[$keyExploded[1]]['data-name'] =  $keyExploded[0];
+                $choices_sort_alphabetically[$keyExploded[1]]['data-email'] =  $choice;
+                $choices_sort_alphabetically[$keyExploded[1]]['value'] =  $key;
+                $choices_sort_alphabetically[$keyExploded[1]]['data-option'] =  $keyExploded[1];
+            }
+            dsm($choices_sort_alphabetically);
+
+            $choices_sort_alphabetically = array_sort_by_key($choices_sort_alphabetically,'data-option');
+            foreach ($choices_sort_alphabetically as $key => $choice) {
+                $options .= '<option value="' . check_plain($choice['value']) . '" data-email="' . check_plain($choice['data-email']) . '" data-name="' . check_plain($choice['data-name']) . '">' . check_plain($choice['data-option']) . '</option>';
+            }
         }else{
-            if (is_array($choice)) {
-                $options .= '<optgroup label="' . check_plain($key) . '">';
-                $options .= form_select_options($element, $choice);
-                $options .= '</optgroup>';
-            }
-            elseif (is_object($choice)) {
-                $options .= form_select_options($element, $choice->option);
-            }
-            else {
-                $key = (string) $key;
-                if ($value_valid && (!$value_is_array && (string) $element['#value'] === $key || ($value_is_array && in_array($key, $element['#value'])))) {
-                    $selected = ' selected="selected"';
+            foreach ($choices as $key => $choice) {
+                if (is_array($choice)) {
+                    $options .= '<optgroup label="' . check_plain($key) . '">';
+                    $options .= form_select_options($element, $choice);
+                    $options .= '</optgroup>';
+                } elseif (is_object($choice)) {
+                    $options .= form_select_options($element, $choice->option);
+                } else {
+                    $key = (string)$key;
+                    if ($value_valid && (!$value_is_array && (string)$element['#value'] === $key || ($value_is_array && in_array($key, $element['#value'])))) {
+                        $selected = ' selected="selected"';
+                    } else {
+                        $selected = '';
+                    }
+                    $options .= '<option value="' . check_plain($key) . '"' . $selected . '>' . check_plain($choice) . '</option>';
                 }
-                else {
-                    $selected = '';
-                }
-                $options .= '<option value="' . check_plain($key) . '"' . $selected . '>' . check_plain($choice) . '</option>';
             }
         }
 
 
-    }
+
     return $options;
 }
 
@@ -1310,4 +1324,42 @@ function aaap_preprocess_views_view_table(&$vars){
             $vars['classes_array'][] = 'table table-striped responsive flip-scroll';
         }
     }
+}
+
+
+/* Simple function to sort an array by a specific key. Maintains index association. */
+
+function array_sort_by_key($array, $on, $order=SORT_ASC)
+{
+    $new_array = array();
+    $sortable_array = array();
+
+    if (count($array) > 0) {
+        foreach ($array as $k => $v) {
+            if (is_array($v)) {
+                foreach ($v as $k2 => $v2) {
+                    if ($k2 == $on) {
+                        $sortable_array[$k] = $v2;
+                    }
+                }
+            } else {
+                $sortable_array[$k] = $v;
+            }
+        }
+
+        switch ($order) {
+            case SORT_ASC:
+                asort($sortable_array);
+                break;
+            case SORT_DESC:
+                arsort($sortable_array);
+                break;
+        }
+
+        foreach ($sortable_array as $k => $v) {
+            $new_array[$k] = $array[$k];
+        }
+    }
+
+    return $new_array;
 }
