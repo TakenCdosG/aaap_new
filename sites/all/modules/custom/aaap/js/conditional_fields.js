@@ -117,8 +117,11 @@
         $('#edit-field-medical-school-select-und').change(function(){
 
             if($(this).val() == 'other | Other '){
+                $('#edit-field-name-of-chairman-und-0-value').val('');
+                $('#edit-field-email-of-chair-und-0-email').val('');
                 $('#edit-field-other-medical-school').css('display','block');
             }else{
+                $('#edit-field-other-medical-school').css('display','none');
                 var name = $(this).find(':selected').attr('data-name');
                 var email = $(this).find(':selected').attr('data-email');
                 $('#edit-field-name-of-chairman-und-0-value').val(name);
