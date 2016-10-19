@@ -315,7 +315,7 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
          $form['#attributes']['autocomplete'] = 'off';
 
 //        add question above checkbox
-        $form['field_attach']['#prefix'] = '<div class="form-item headin-form-item question-field-attach" style="margin-bottom: 0;padding-bottom: 0;"><label>Are you the head administrator of your department? </label></div>';
+        $form['field_attach']['#prefix'] = '<div class="form-item headin-form-item question-field-attach" style="margin-bottom: 0;padding-bottom: 0;"><label>Are you the head administrator of your department? <span class="form-required" title="This field is required.">*</span></label></div>';
 
         //change the description of the picture field
         //$form['picture']['picture_upload']['#description']='Pictures larger than 1024x1024 pixels will be scaled down.<br/>Make sure to save your profile after uploading or deleting your picture to keep the changes.';
