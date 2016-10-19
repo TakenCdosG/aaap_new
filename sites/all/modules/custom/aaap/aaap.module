@@ -528,9 +528,14 @@ function form_options_attributes_form_select_options($element, $choices = NULL) 
                 $choices_sort_alphabetically[$keyExploded[1]]['value'] =  $key;
                 $choices_sort_alphabetically[$keyExploded[1]]['data-option'] =  $keyExploded[1];
             }
-            dsm($choices_sort_alphabetically);
+            //dsm($choices_sort_alphabetically);
 
             $choices_sort_alphabetically = array_sort_by_key($choices_sort_alphabetically,'data-option');
+
+            $other = $choices_sort_alphabetically['other'];
+            unset($choices_sort_alphabetically['other']);
+            $choices_sort_alphabetically['other'] = $other;
+
             foreach ($choices_sort_alphabetically as $key => $choice) {
                 $options .= '<option value="' . check_plain($choice['value']) . '" data-email="' . check_plain($choice['data-email']) . '" data-name="' . check_plain($choice['data-name']) . '">' . check_plain($choice['data-option']) . '</option>';
             }
