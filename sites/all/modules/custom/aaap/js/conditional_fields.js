@@ -112,7 +112,10 @@
             }
         });
 
-        $('#edit-field-other-medical-school').css('display','none');
+        if($('#edit-field-medical-school-select-und').val() != 'other | Other '){
+            $('#edit-field-other-medical-school').css('display','none');
+        }
+
 
         $('#edit-field-medical-school-select-und').change(function(){
 
@@ -121,6 +124,8 @@
                 $('#edit-field-email-of-chair-und-0-email').val('');
                 $('#edit-field-other-medical-school').css('display','block');
             }else{
+
+                $('#edit-field-other-medical-school-und-0-value').val('');
                 $('#edit-field-other-medical-school').css('display','none');
                 var name = $(this).find(':selected').attr('data-name');
                 var email = $(this).find(':selected').attr('data-email');
