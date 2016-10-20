@@ -117,7 +117,7 @@ $user = user_load(arg(1));
     </div>
     <div class="col block two">
         <div class="field_custom_profile">
-            <label>Institution: </label>
+            <label>Hospital: </label>
             <div class="value_custom_profile"><?php if(!empty($user_profile['field_institution'])){print $user_profile['field_institution']['#items'][0]['value'];}?></div>
         </div>
         <div class="field_custom_profile">
