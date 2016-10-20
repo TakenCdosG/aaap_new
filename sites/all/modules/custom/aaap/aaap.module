@@ -311,7 +311,7 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
 
     if ($form_id == 'user_register_form' or $form_id == 'user_profile_form') {
 
-       // dsm($form);
+        dsm($form);
          $form['#attributes']['autocomplete'] = 'off';
 
 //        add question above checkbox
@@ -548,7 +548,7 @@ function form_options_attributes_form_select_options($element, $choices = NULL) 
             unset($choices_sort_alphabetically['Select ']);
             array_unshift($choices_sort_alphabetically, $select);
 
-            dsm($choices_sort_alphabetically);
+           // dsm($choices_sort_alphabetically);
 
             foreach ($choices_sort_alphabetically as $key => $choice) {
                 $choice['value'] = (string)$choice['value'];

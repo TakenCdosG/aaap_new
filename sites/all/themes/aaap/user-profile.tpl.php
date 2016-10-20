@@ -129,8 +129,23 @@ $user = user_load(arg(1));
             <div class="value_custom_profile"><?php if(!empty($user_profile['field_institution_type'])){print $user_profile['field_institution_type'][0]['#markup'];}?></div>
         </div>
         <div class="field_custom_profile">
-            <label>Medical School Affiliation (AAMC): </label>
-            <div class="value_custom_profile"><?php if(!empty($user_profile['field_medical_school'])){print $user_profile['field_medical_school']['#items'][0]['value'];}?></div>
+            <label>Medical School: </label>
+            <div class="value_custom_profile">
+                <?php
+
+                if(!empty($user->field_medical_school_select)){
+
+                    $medical_school = explode(' | ', $user->field_medical_school_select['und'][0]['value']);
+
+                    if($medical_school[1] == 'Other '){
+                        print $user->field_other_medical_school['und'][0]['value'];
+                    }else{
+
+                        print $medical_school[1];
+                    }
+                }
+                ?>
+            </div>
         </div>
     </div>
     
