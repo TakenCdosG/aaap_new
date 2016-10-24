@@ -221,12 +221,12 @@ function aaap_renewals_form_alter(&$form, &$form_state, $form_id){
             //$form['field_renewal_date']['#disabled']= TRUE;
             $form['field_renewal_date']['#access']= TRUE;
         }
-
+        $form['#prefix'] = t('*Please update your member profile information before proceeding to payment.<br />');
+        // dsm($form);
 
     }
 
-    $form['#prefix'] = t('*Please update your member profile information before proceeding to payment.<br />');
-   // dsm($form);
+
 }
 
 function renewal_membership_access_helper(){
