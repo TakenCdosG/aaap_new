@@ -225,7 +225,7 @@ function aaap_renewals_form_alter(&$form, &$form_state, $form_id){
 
     }
 
-    $form['#prefix'] = t('Please update your member profile information before proceeding to payment.');
+    $form['#prefix'] = t('*Please update your member profile information before proceeding to payment.<br />');
    // dsm($form);
 }
 
