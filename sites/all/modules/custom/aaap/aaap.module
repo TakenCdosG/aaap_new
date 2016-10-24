@@ -796,7 +796,7 @@ function aaap_user_update(&$edit, $account, $category)
 
 
     }
-    if($_SESSION['renewal_status'] == "goEditUser"){
+    if(!empty($_SESSION['renewal_status']) and  ($_SESSION['renewal_status'] == "goEditUser")){
         $_SESSION['renewal_status'] = 'addMembershipRenewalProductToCart';
     }
 
