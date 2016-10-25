@@ -215,15 +215,26 @@ function aaap_renewals_user_update(&$edit, $account, $category){
 
 function aaap_renewals_form_alter(&$form, &$form_state, $form_id){
     global $user;
-
+ //dsm($form_id);
     if($form_id == 'user_register_form' or $form_id == 'user_profile_form'){
         if(array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles) || $user->uid == 1){
             //$form['field_renewal_date']['#disabled']= TRUE;
             $form['field_renewal_date']['#access']= TRUE;
         }
         $form['#prefix'] = t('* Please update your member profile information before proceeding to payment.<br /><br />');
-        // dsm($form);
 
+
+    }
+
+    if($form_id == 'uc_cart_checkout_form'){
+
+        $form['#prefix'] = t('If you prefer to pay by check please make the check payable to AAAP and send to:<br /><br />
+                            Eileen Drames<br />
+                            The Children\'s Hospital of Philadelphia<br />
+                            General Pediatrics, 12NW Room 57<br />
+                            34th and Civic Center Boulevard<br />
+                            Philadelphia, PA 19104.<br /><br />
+                            Tax ID# 56-1449651.<br /><br />');
     }
 
 
