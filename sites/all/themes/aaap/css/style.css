@@ -590,7 +590,8 @@ input:-moz-placeholder {
     display: none;
 }
 .page-user #edit-field-to-whom-do-you-report-und-0-field-name-report-und-0-value,
-.page-user #edit-field-head-admin-info-und-0-field-name-head-admin-und-0-value{
+.page-user #edit-field-head-admin-info-und-0-field-name-head-admin-und-0-value,
+.page-user #edit-field-head-admin-info-und-0-field-title-head-admin-und-0-value{
     margin-right: 10px;
 }
 .page-user fieldset{
@@ -1459,8 +1460,6 @@ tr.even, tr.odd{
 
 h2.title.comment-form{
     margin-top: 30px;
-<<<<<<< HEAD
-=======
 }
 
 .head-administrator{
@@ -1668,5 +1667,5 @@ table.responsive td, table.responsive th {
     .flip-scroll ::-webkit-scrollbar-thumb:window-inactive {
         background: rgba(255,0,0,0.4);
     }
->>>>>>> 18645676a338f9d102101bead6b180f6bbef4397
+
 }

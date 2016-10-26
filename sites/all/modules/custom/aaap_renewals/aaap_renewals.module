@@ -14,6 +14,10 @@ function aaap_renewals_menu(){
         'page callback' => 'renewal_membership_link_login_callback',
         'access callback' => TRUE
     );
+    $items['add-membership-renewal-product-to-cart'] = array(
+        'page callback' => 'add_membership_renewal_product_to_cart_callback',
+        'access callback' => TRUE
+    );
     $items['renewal_period_ends_callback'] = array(
         'page callback' => 'renewal_period_ends_callback',
         'access callback' => TRUE
@@ -211,13 +215,28 @@ function aaap_renewals_user_update(&$edit, $account, $category){
 
 function aaap_renewals_form_alter(&$form, &$form_state, $form_id){
     global $user;
-
+ //dsm($form_id);
     if($form_id == 'user_register_form' or $form_id == 'user_profile_form'){
         if(array_key_exists(ADMINISTRATOR, $user->roles) || array_key_exists(SUPER, $user->roles) || $user->uid == 1){
             //$form['field_renewal_date']['#disabled']= TRUE;
             $form['field_renewal_date']['#access']= TRUE;
         }
+        $form['#prefix'] = t('* Please update your member profile information before proceeding to payment.<br /><br />');
+
+
     }
+
+    if($form_id == 'uc_cart_checkout_form'){
+
+        $form['#prefix'] = t('If you prefer to pay by check please make the check payable to AAAP and send to:<br /><br />
+                            Eileen Drames<br />
+                            The Children\'s Hospital of Philadelphia<br />
+                            General Pediatrics, 12NW Room 57<br />
+                            34th and Civic Center Boulevard<br />
+                            Philadelphia, PA 19104.<br /><br />
+                            Tax ID# 56-1449651.<br /><br />');
+    }
+
 
 }
 
@@ -313,14 +332,25 @@ function get_price($user){
 }
 
 function renewal_membership_link_login_callback(){
-
+    global $user;
     if(user_is_logged_in()){
 //        dsm('entro');
         if(!renewal_membership_access_helper()){
             drupal_goto(INVALID_RENEWAL, array('absolute' => true));
         }
+        drupal_session_start();
+        $_SESSION['renewal_status'] = "goEditUser";
+        drupal_goto('user/'.$user->uid.'/edit',array('query'=>array('destination'=>'add-membership-renewal-product-to-cart')));
 
-        global $user;
+    }else{
+        drupal_goto('user',array('query'=>array('destination'=>'renewal-membership')));
+        }
+}
+
+function add_membership_renewal_product_to_cart_callback(){
+    global $user;
+    if($_SESSION['renewal_status'] == 'addMembershipRenewalProductToCart'){
+        $_SESSION['renewal_status'] = 'avoid';
         $user = user_load($user->uid);
         $user->field_created_by['und'][0]['value']= 'ubertcard';
         user_save($user);
@@ -331,10 +361,11 @@ function renewal_membership_link_login_callback(){
         uc_cart_empty(uc_cart_get_id());
         uc_cart_add_item(PRODUCT_MEMBERSHIP_RENEWAL_ID, $qty = 1, $data = NULL, $cid = NULL, $msg = TRUE, $check_redirect = TRUE, $rebuild = TRUE);
         drupal_goto('cart/checkout');
-
     }else{
-        drupal_goto('user',array('query'=>array('destination'=>'renewal-membership')));
-        }
+        drupal_goto(INVALID_RENEWAL, array('absolute' => true));
+    }
+
+
 }
 
 function renewal_send_reminder_emails_callback(){
