@@ -464,7 +464,7 @@ function head_administrator_validate($form, &$form_state){
     }
 
     if($form_state['values']['field_no_attach']['und'][0]['value'] == 'no' and $form_state['values']['field_head_admin_info']['und'][0]['field_email_head_admin']['und'][0]['email'] == ''){
-        form_set_error("field_head_admin_info']['und'][0]['field_email_head_admin]['und'][0]['email", 'Email of head administrator field is required');
+        form_set_error("field_head_admin_info']['und'][0]['field_email_head_admin]['und'][0]['email", 'Email of TOP ADMINISTRATOR INFO is required');
     }
 
 }
