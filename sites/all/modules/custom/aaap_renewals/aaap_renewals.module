@@ -243,7 +243,7 @@ function aaap_renewals_form_alter(&$form, &$form_state, $form_id){
 function renewal_membership_access_helper(){
 
     global $user;
-    //    dsm($user);
+    // dsm($user);
 
     if(array_key_exists(EXPIRED, $user->roles)){
         return true;
@@ -267,6 +267,11 @@ function renewal_membership_access_helper(){
 //    dsm('now:'.date("Y-m-d H:i",$now));
 
     if($renewal_user_date < $renewal_start_date && $now >= $renewal_start_date && $now <= $renewal_end_date){
+        return true;
+    }
+
+    // allow this special user renewal at any time test proposing
+    if($user->uid == 1134 or $user->uid == 582){
         return true;
     }
 
