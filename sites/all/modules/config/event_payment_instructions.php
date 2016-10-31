@@ -3,7 +3,7 @@ mail($submission->data[EVENT_EMAIL_FIELD_ID][0], SITE_NAME.' Event Payment Instr
   .'We have received notification you will pay registration in the form of a check.'. "\r\n \r\n"
   .'Please make check payable to: '.SITE_NAME.' and send to:'. "\r\n \r\n"
   .'Eileen Drames'."\r\n"
-  .'The Children’s Hospital of Philadelphia'. "\r\n"
+  ."The Children's Hospital of Philadelphia". "\r\n"
   .'General Pediatrics, 12NW Room 57'. "\r\n"
   .'34th and Civic Center Boulevard'. "\r\n"
   .'Philadelphia, PA 19104.'."\r\n \r\n"

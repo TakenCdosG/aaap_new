@@ -1,0 +1,36 @@
+.formulario-events{
+
+}
+
+.ctools-use-modal-processed .messages_status{
+    background: #235282;
+    padding: 10px;
+    color: #fff;
+    font-family: Georgia;
+    font-size: 16px;
+    font-weight: 300;
+    text-align: left;
+    margin-bottom: 15px;
+    margin-top: 5px;
+}
+
+div.ctools-modal-content .modal-header {
+    background-color: #235282;
+    padding: 0 .25em 0 1em;
+    padding: 5px 10px;
+}
+
+.ctools-use-modal-processed input{
+    background: none repeat scroll 0 0 white;
+    border: 1px solid #000000;
+    color: black;
+    font-family: "allerregular";
+    font-weight: normal;
+    padding: 8px;
+    margin-top: 5px;
+}
+
+.ctools-use-modal-processed  .btn-ctools-close-modal{
+    margin-left: 20px;
+    border-bottom: 1px dashed #ccc;
+}

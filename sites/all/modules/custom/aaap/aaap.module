@@ -251,7 +251,7 @@ function aaap_globals($arg)
 function aaap_form_alter(&$form, &$form_state, $form_id)
 {
     global $user;
-    //dsm($form);
+    //dsm($form_id);
 
 
     // Don't alter the normal profile edit form, but only the password reset form.
@@ -301,14 +301,21 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
         if (!isset($_SESSION)) {
             $_SESSION = array();
         }
+
+        if (isset($user->uid)) {
+            $form['#token'] = NULL;
+        } 
+        
     }
 
 
     if ($form_id == 'user_register_form' or $form_id == 'user_profile_form') {
+
+        //dsm($form);
          $form['#attributes']['autocomplete'] = 'off';
 
 //        add question above checkbox
-        $form['field_attach']['#prefix'] = '<div class="form-item headin-form-item question-field-attach" style="margin-bottom: 0;padding-bottom: 0;"><label>Are you the head administrator of your department? </label></div>';
+        $form['field_attach']['#prefix'] = '<div class="form-item headin-form-item question-field-attach" style="margin-bottom: 0;padding-bottom: 0;"><label>Are you the head administrator of your department? <span class="form-required" title="This field is required.">*</span></label></div>';
 
         //change the description of the picture field
         //$form['picture']['picture_upload']['#description']='Pictures larger than 1024x1024 pixels will be scaled down.<br/>Make sure to save your profile after uploading or deleting your picture to keep the changes.';
@@ -365,11 +372,10 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
                 drupal_get_path('module', 'aaap') . '/js/conditional_fields.js',
             );
         }
+        array_unshift($form['#validate'], 'head_administrator_validate');
     }//end if
 
     if ($form_id == 'user_register_form') {
-
-        dsm($form);
 
         if (!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)) {
             $form['field_new_or_renewal']['#prefix'] = '<div class="custom_legend">MEMBERSHIP INFORMATION</div>';
@@ -429,7 +435,6 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
         $form['pass']['#suffix'] = '<a href="/user/password" class="text_login">Forgot password?</a>';
     }
 
-
 }
 
 /**
@@ -452,6 +457,133 @@ function aaap_form_user_profile_form_alter(&$form, &$form_state)
 
 }
 
+function head_administrator_validate($form, &$form_state){
+
+    if(!($form_state['values']['field_attach']['und'][0]['value']== 'yes' or $form_state['values']['field_no_attach']['und'][0]['value']== 'no')){
+        form_set_error('field_attach', 'Answer this question : Are you the head administrator of your department?');
+    }
+
+    if($form_state['values']['field_no_attach']['und'][0]['value'] == 'no' and $form_state['values']['field_head_admin_info']['und'][0]['field_email_head_admin']['und'][0]['email'] == ''){
+        form_set_error("field_head_admin_info']['und'][0]['field_email_head_admin]['und'][0]['email", 'Email in HEAD ADMINISTRATOR INFO is required');
+    }
+
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function aaap_theme_registry_alter(&$theme_registry) {
+
+    $theme_registry['select']['function'] = 'form_options_attributes_select';
+}
+
+function form_options_attributes_select($variables) {
+
+        $element = $variables['element'];
+        element_set_attributes($element, array('id', 'name', 'size'));
+        _form_set_class($element, array('form-select'));
+
+        return '<select' . drupal_attributes($element['#attributes']) . '> ' . form_options_attributes_form_select_options($element) . '</select>';
+
+}
+
+/**
+ * Converts a select form element's options array into HTML.
+ * Copied from form_select_options(), and added patch from:
+ * https://www.drupal.org/node/414562
+ *
+ * @param $element
+ *   An associative array containing the properties of the element.
+ * @param $choices
+ *   Mixed: Either an associative array of items to list as choices, or an
+ *   object with an 'option' member that is an associative array. This
+ *   parameter is only used internally and should not be passed.
+ *
+ * @return
+ *   An HTML string of options for the select form element.
+ */
+function form_options_attributes_form_select_options($element, $choices = NULL) {
+
+    if (!isset($choices)) {
+        $choices = $element['#options'];
+    }
+
+    // array_key_exists() accommodates the rare event where $element['#value'] is NULL.
+    // isset() fails in this situation.
+    $value_valid = isset($element['#value']) || array_key_exists('#value', $element);
+    $value_is_array = $value_valid && is_array($element['#value']);
+    $options = '';
+
+
+        if(!empty($element['#field_name']) and ($element['#field_name'] == 'field_medical_school_select')){
+
+            $choices_sort_alphabetically = array();
+
+            //refactoring the array before sort
+            foreach ($choices as $key => $choice) {
+                $keyExploded = explode(' | ', $key);
+                $choice = str_replace(' ', '', $choice);
+
+                $choices_sort_alphabetically[$keyExploded[1]]['data-name'] =  $keyExploded[0];
+                $choices_sort_alphabetically[$keyExploded[1]]['data-email'] =  $choice;
+                $choices_sort_alphabetically[$keyExploded[1]]['value'] =  $key;
+                $choices_sort_alphabetically[$keyExploded[1]]['data-option'] =  $keyExploded[1];
+            }
+            //dsm($choices_sort_alphabetically);
+
+            $choices_sort_alphabetically = array_sort_by_key($choices_sort_alphabetically,'data-option');
+
+            // add 'other' option to the end of the select after sort
+            $other = $choices_sort_alphabetically['Other '];
+            unset($choices_sort_alphabetically['Other ']);
+            $choices_sort_alphabetically['Other '] = $other;
+
+
+            //add 'select' word and the beginning
+
+            $select = $choices_sort_alphabetically['Select '];
+            $select['data-name'] = '';
+            $select['data-email'] = '';
+            unset($choices_sort_alphabetically['Select ']);
+            array_unshift($choices_sort_alphabetically, $select);
+
+           // dsm($choices_sort_alphabetically);
+
+            foreach ($choices_sort_alphabetically as $key => $choice) {
+                $choice['value'] = (string)$choice['value'];
+                if ($value_valid && (!$value_is_array && (string)$element['#value'] === $choice['value'] || ($value_is_array && in_array($choice['value'], $element['#value'])))) {
+                    $selected = ' selected="selected"';
+                } else {
+                    $selected = '';
+                }
+                $options .= '<option value="' . check_plain($choice['value']) . '" data-email="' . check_plain($choice['data-email']) . '" data-name="' . check_plain($choice['data-name']) . '"' . $selected . '>' . check_plain($choice['data-option']) . '</option>';
+            }
+        }else{
+            foreach ($choices as $key => $choice) {
+                if (is_array($choice)) {
+                    $options .= '<optgroup label="' . check_plain($key) . '">';
+                    $options .= form_select_options($element, $choice);
+                    $options .= '</optgroup>';
+                } elseif (is_object($choice)) {
+                    $options .= form_select_options($element, $choice->option);
+                } else {
+                    $key = (string)$key;
+                    if ($value_valid && (!$value_is_array && (string)$element['#value'] === $key || ($value_is_array && in_array($key, $element['#value'])))) {
+                        $selected = ' selected="selected"';
+                    } else {
+                        $selected = '';
+                    }
+                    $options .= '<option value="' . check_plain($key) . '"' . $selected . '>' . check_plain($choice) . '</option>';
+                }
+            }
+        }
+
+
+
+    return $options;
+}
+
+
 function changed_value($form, &$form_state)
 {
     $form_state['values']['name'] = $form_state['values']['mail'];
@@ -460,7 +592,6 @@ function changed_value($form, &$form_state)
 
 function register_validate($form, &$form_state)
 {
-
 
     //  validate if "Pediatrics" was not entered in the "Enter 'Pediatrics:'" field
     if ($form_state['values']['field_enter_pediatrics']['und'][0]['value'] !== CAPTCHA) {
@@ -482,6 +613,9 @@ function register_validate($form, &$form_state)
 function profile_validate($form, &$form_state)
 {
 
+    if($form_state['values']['field_medical_school_select']['und'][0]['value'] == 'select | Select '){
+        form_set_error('field_medical_school_select', 'Medical School field is required.');
+    }
     // if entered, validate if "Office Telephone" has the correct format xxx-xxx-xxxx
     $off_phone = $form_state['values']['field_office_telephone']['und'][0]['value'];
     if ($off_phone !== '' && !preg_match("/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/", $off_phone)) {
@@ -661,6 +795,9 @@ function aaap_user_update(&$edit, $account, $category)
         }
 
 
+    }
+    if(!empty($_SESSION['renewal_status']) and  ($_SESSION['renewal_status'] == "goEditUser")){
+        $_SESSION['renewal_status'] = 'addMembershipRenewalProductToCart';
     }
 
 
@@ -1213,4 +1350,42 @@ function aaap_preprocess_views_view_table(&$vars){
             $vars['classes_array'][] = 'table table-striped responsive flip-scroll';
         }
     }
+}
+
+
+/* Simple function to sort an array by a specific key. Maintains index association. */
+
+function array_sort_by_key($array, $on, $order=SORT_ASC)
+{
+    $new_array = array();
+    $sortable_array = array();
+
+    if (count($array) > 0) {
+        foreach ($array as $k => $v) {
+            if (is_array($v)) {
+                foreach ($v as $k2 => $v2) {
+                    if ($k2 == $on) {
+                        $sortable_array[$k] = $v2;
+                    }
+                }
+            } else {
+                $sortable_array[$k] = $v;
+            }
+        }
+
+        switch ($order) {
+            case SORT_ASC:
+                asort($sortable_array);
+                break;
+            case SORT_DESC:
+                arsort($sortable_array);
+                break;
+        }
+
+        foreach ($sortable_array as $k => $v) {
+            $new_array[$k] = $array[$k];
+        }
+    }
+
+    return $new_array;
 }

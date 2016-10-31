@@ -36,6 +36,7 @@
 ?>
 <?php
 $user = user_load(arg(1));
+//dsm($user);
 ?>
 <div class="user_custom_profile profile"<?php print $attributes; ?>>
     <div class="user_name"><?php if(!empty($user_profile['field_first_name'])){print $user_profile['field_first_name']['#items'][0]['value'];} if(!empty($user_profile['field_last_name'])){print " ".$user_profile['field_last_name']['#items'][0]['value'];} ?></div>
@@ -52,7 +53,12 @@ $user = user_load(arg(1));
             <label>Email: </label>
             <div class="value_custom_profile"><a href="mailto:<?php print $user->mail;?>" target="_blank"><?php print $user->mail;?></a></div>
         </div>
-        
+        <?php if(!empty($user->field_became_aaap_member)){ ?>
+        <div class="field_custom_profile">
+            <label>Became AAAP Member: </label>
+            <div class="value_custom_profile"><?php print $user->field_became_aaap_member['und'][0]['value'];?></div>
+        </div>
+        <?php } ?>
         <div class="field_custom_profile address one">
             <label>Address: </label>
             <div class="value_custom_profile"><?php if(!empty($user_profile['field_address_line_1'])){print $user_profile['field_address_line_1']['#items'][0]['value'];}?></div>
@@ -111,7 +117,7 @@ $user = user_load(arg(1));
     </div>
     <div class="col block two">
         <div class="field_custom_profile">
-            <label>Institution: </label>
+            <label>Hospital: </label>
             <div class="value_custom_profile"><?php if(!empty($user_profile['field_institution'])){print $user_profile['field_institution']['#items'][0]['value'];}?></div>
         </div>
         <div class="field_custom_profile">
@@ -123,8 +129,23 @@ $user = user_load(arg(1));
             <div class="value_custom_profile"><?php if(!empty($user_profile['field_institution_type'])){print $user_profile['field_institution_type'][0]['#markup'];}?></div>
         </div>
         <div class="field_custom_profile">
-            <label>Medical School Affiliation (AAMC): </label>
-            <div class="value_custom_profile"><?php if(!empty($user_profile['field_medical_school'])){print $user_profile['field_medical_school']['#items'][0]['value'];}?></div>
+            <label>Medical School: </label>
+            <div class="value_custom_profile">
+                <?php
+
+                if(!empty($user->field_medical_school_select)){
+
+                    $medical_school = explode(' | ', $user->field_medical_school_select['und'][0]['value']);
+
+                    if($medical_school[1] == 'Other '){
+                        print $user->field_other_medical_school['und'][0]['value'];
+                    }else{
+
+                        print $medical_school[1];
+                    }
+                }
+                ?>
+            </div>
         </div>
     </div>
     

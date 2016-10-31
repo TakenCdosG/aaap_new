@@ -22,6 +22,7 @@
         var $field_region_canada = $('#edit-field-region #edit-field-region-und-canada', $form);
         var $field_canada_state_province = $('#edit-field-canada-state-province', $form);
         var $field_attach_und_yes = $('#edit-field-attach-und-yes', $form);
+        var $field_attach_und_no = $('#edit-field-no-attach-und-no', $form);
         var $region_head_administrator = $('.head-administrator', $form);
         var $field_institution = $('#edit-field-institution-und-0-value', $form);
         var $field_ha_institution = $('#edit-field-institution-name-und-0-value', $form);
@@ -105,10 +106,36 @@
             if(this.checked) {
                 //Do stuff
                 $region_head_administrator.css("display", "block");
+                $field_attach_und_no.unchecked();
             }else{
                 $region_head_administrator.css("display", "none");
             }
         });
+
+        if($('#edit-field-medical-school-select-und').val() != 'other | Other '){
+            $('#edit-field-other-medical-school').css('display','none');
+        }
+
+
+        $('#edit-field-medical-school-select-und').change(function(){
+
+            if($(this).val() == 'other | Other '){
+                $('#edit-field-name-of-chairman-und-0-value').val('');
+                $('#edit-field-email-of-chair-und-0-email').val('');
+                $('#edit-field-other-medical-school').css('display','block');
+            }else{
+
+                $('#edit-field-other-medical-school-und-0-value').val('');
+                $('#edit-field-other-medical-school').css('display','none');
+                var name = $(this).find(':selected').attr('data-name');
+                var email = $(this).find(':selected').attr('data-email');
+                $('#edit-field-name-of-chairman-und-0-value').val(name);
+                $('#edit-field-email-of-chair-und-0-email').val(email);
+            }
+
+        }
+
+        );
 
         if ($field_attach_und_yes.is(':checked')) {
             $region_head_administrator.css("display", "block");

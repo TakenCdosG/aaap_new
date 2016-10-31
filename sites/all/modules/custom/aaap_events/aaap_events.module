@@ -17,425 +17,501 @@ require_once DRUPAL_ROOT.'/sites/all/modules/ubercart/uc_order/uc_order.api.php'
 
 function aaap_events_menu(){
 
-    $items['event/%/registration'] = array(
-        'page callback' => '_render_event_webform',
-        'page arguments' => array(1),
-        'access callback' => TRUE,
-        'title' => 'Event Report'
-    );
-    $items['admin/event/%/report'] = array(
-        'page callback' => '_render_event_report',
-        'page arguments' => array(2),
-        'access callback' => TRUE
-    );
-    $items['admin/event/%node/csv'] = array(
-        'page callback' => 'export_submissions_to_csv',
-        'page arguments' => array(2),
-        'access callback' => TRUE
-    );
+  $items['event/%/registration'] = array(
+    'page callback' => '_render_event_webform',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'title' => 'Event Report'
+  );
+  $items['admin/event/%/report'] = array(
+    'page callback' => '_render_event_report',
+    'page arguments' => array(2),
+    'access callback' => TRUE
+  );
+  $items['admin/event/%node/csv'] = array(
+    'page callback' => 'export_submissions_to_csv',
+    'page arguments' => array(2),
+    'access callback' => TRUE
+  );
 
-    return $items;
+  return $items;
 
 }
 
 function aaap_events_webform_submission_insert($node, $submission) {
 
 
-    //dsm($submission);
-    if(!empty($submission->data[EVENT_PAYMENT_FIELD_ID]) and $node->type == PRODUCT_EVENT_TYPE) {
+  //dsm($submission);
+  if(!empty($submission->data[EVENT_PAYMENT_FIELD_ID]) and $node->type == PRODUCT_EVENT_TYPE) {
 
-        $event_fee = _ap_get_final_price($node, $submission);
-        $reg_fee = _ap_is_active_member(true) ? $node->field_member_registration_fee['und'][0]['value'] : $node->field_non_member_registration_fe['und'][0]['value'];
+    $event_fee = _ap_get_final_price($node, $submission);
+    $reg_fee = _ap_is_active_member(true) ? $node->field_member_registration_fee['und'][0]['value'] : $node->field_non_member_registration_fe['und'][0]['value'];
 
-        $additional_price = NULL;
-        $additional_amount = NULL;
-        if(!empty($submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0])){
-            $additional_amount = $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0];
+    $additional_price = NULL;
+    $additional_amount = NULL;
+    if(!empty($submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0])){
+      $additional_amount = $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0];
+    }
+
+    if(SITE_NAME == 'AAAP') {
+
+      if(!empty($submission->data[EVENT_TYPE_OF_GUEST][0])){
+        //dsm($submission->data[EVENT_TYPE_OF_GUEST][0]);
+        $additional_price = 00.00;
+        if ($submission->data[EVENT_TYPE_OF_GUEST][0] == 'first_option') {
+          $additional_price = 220.00;
+        } elseif($submission->data[EVENT_TYPE_OF_GUEST][0] == 'second_option') {
+          $additional_price = 400.00;
         }
+      }
 
-        if(SITE_NAME == 'AAAP') {
+      //dsm($submission);
+      //dsm($submission->data[EVENT_TYPE_OF_GUEST][0]);
 
-            if(!empty($submission->data[EVENT_TYPE_OF_GUEST][0])){
-                //dsm($submission->data[EVENT_TYPE_OF_GUEST][0]);
-                $additional_price = 00.00;
-                if ($submission->data[EVENT_TYPE_OF_GUEST][0] == 'first_option') {
-                    $additional_price = 220.00;
-                } elseif($submission->data[EVENT_TYPE_OF_GUEST][0] == 'second_option') {
-                    $additional_price = 400.00;
-                }
-            }
-
-            //dsm($submission);
-            //dsm($submission->data[EVENT_TYPE_OF_GUEST][0]);
-
-        }
-        elseif (SITE_NAME == 'AASA'){
-            $additional_price = $node->field_fee_for_guests['und'][0]['value'];
-        }
+    }
+    elseif (SITE_NAME == 'AASA'){
+      $additional_price = $node->field_fee_for_guests['und'][0]['value'];
+    }
 
 
 //dsm($submission);
 //dsm($submission->data[12]['value'][0]);
-        insert_invoice(array(
-            'uid'=> $submission->uid,
-            'order_total' => $reg_fee,
-            'item_id' => $submission->nid,
-            'key_id' => $submission->sid,
-            'order_status' => 'pending',
-            'payment_method' => $submission->data[EVENT_PAYMENT_FIELD_ID][0],
-            'primary_email' => $submission->data[12][0],
-            'additional_price' => $additional_price,
-            'additional_amount' => $additional_amount,
-            'billing_first_name' => $submission->data[1][0],
-            'billing_last_name' =>  $submission->data[2][0],
-            'billing_company' => $submission->data[5][0],
-            'billing_street1' => $submission->data[6][0],
-            'billing_street2' => $submission->data[7][0],
-            'billing_city' => $submission->data[8][0],
-            'billing_zone' => $submission->data[9][0],
-            'billing_postal_code' => $submission->data[10][0],
-        ));
+    insert_invoice(array(
+      'uid'=> $submission->uid,
+      'order_total' => $reg_fee,
+      'item_id' => $submission->nid,
+      'key_id' => $submission->sid,
+      'order_status' => 'pending',
+      'payment_method' => $submission->data[EVENT_PAYMENT_FIELD_ID][0],
+      'primary_email' => $submission->data[12][0],
+      'additional_price' => $additional_price,
+      'additional_amount' => $additional_amount,
+      'billing_first_name' => $submission->data[1][0],
+      'billing_last_name' =>  $submission->data[2][0],
+      'billing_company' => $submission->data[5][0],
+      'billing_street1' => $submission->data[6][0],
+      'billing_street2' => $submission->data[7][0],
+      'billing_city' => $submission->data[8][0],
+      'billing_zone' => $submission->data[9][0],
+      'billing_postal_code' => $submission->data[10][0],
+    ));
 
-        if ($submission->data[EVENT_PAYMENT_FIELD_ID][0] == 'credit_card') {
-            uc_cart_empty(uc_cart_get_id());
-            $node->sell_price = $event_fee;
-            node_save($node);
-            $data = array('atributes' => array('sid' => $submission->sid));
-            //dsm($data);
+    if ($submission->data[EVENT_PAYMENT_FIELD_ID][0] == 'credit_card') {
+      uc_cart_empty(uc_cart_get_id());
+      $node->sell_price = $event_fee;
+      node_save($node);
+      $data = array('atributes' => array('sid' => $submission->sid));
+      //dsm($data);
 
-            uc_cart_add_item($node->nid, $qty = 1, $data, $cid = NULL, $msg = TRUE, $check_redirect = TRUE, $rebuild = TRUE);
-            drupal_get_messages('status', $clear_queue = TRUE);
-            drupal_goto('cart/checkout');
-        } elseif ($submission->data[EVENT_PAYMENT_FIELD_ID][0] == 'mail_check') {
-            $event_price = $event_fee;
-            $vent_guest = _ap_get_guests_fee($submission, $node);
-            //dsm($submission);
-            //dsm($node);
+      uc_cart_add_item($node->nid, $qty = 1, $data, $cid = NULL, $msg = TRUE, $check_redirect = TRUE, $rebuild = TRUE);
+      drupal_get_messages('status', $clear_queue = TRUE);
+      drupal_goto('cart/checkout');
+    } elseif ($submission->data[EVENT_PAYMENT_FIELD_ID][0] == 'mail_check') {
+      $event_price = $event_fee;
+      $vent_guest = _ap_get_guests_fee($submission, $node);
+      //dsm($submission);
+      //dsm($node);
 
-            include(DRUPAL_ROOT . '/sites/all/modules/config/event_payment_instructions.php');
+      include(DRUPAL_ROOT . '/sites/all/modules/config/event_payment_instructions.php');
 
-            global $base_root;
+      global $base_root;
 
-            $subject =  SITE_NAME . ' Meeting: New Registrant Notification';
-            $message = 'A registrant has signed up for a ' . $node->title . '. Click here to see the registration information: <a href="'.$base_root.'/node/'.$node->nid.'/submission/'.$submission->sid.'">'.$base_root.'/node/'.$node->nid.'/submission/'.$submission->sid.'</a><br />'
-                .'Thank you,'. "<br />"
-                .SITE_NAME;
-            $email = new PHPMailer();
-            $email->From      = SYSTEM_MAIL;
-            $email->FromName  = SITE_NAME;
-            $email->Subject   = $subject;
-            $email->Body      = $message;
-            $email->IsHTML(true);
-            $email_to = explode(',',ADMIN_MAIL);
-            // dsm($email_to);
-            foreach($email_to as $value){
-                $email->AddAddress($value,'');
-            }
-            $email->Send();
+      $subject =  SITE_NAME . ' Meeting: New Registrant Notification';
+      $message = 'A registrant has signed up for a ' . $node->title . '. Click here to see the registration information: <a href="'.$base_root.'/node/'.$node->nid.'/submission/'.$submission->sid.'">'.$base_root.'/node/'.$node->nid.'/submission/'.$submission->sid.'</a><br />'
+        .'Thank you,'. "<br />"
+        .SITE_NAME;
+      $email = new PHPMailer();
+      $email->From      = SYSTEM_MAIL;
+      $email->FromName  = SITE_NAME;
+      $email->Subject   = $subject;
+      $email->Body      = $message;
+      $email->IsHTML(true);
+      $email_to = explode(',',ADMIN_MAIL);
+      // dsm($email_to);
+      foreach($email_to as $value){
+        $email->AddAddress($value,'');
+      }
+      $email->Send();
 
 
-        }
     }
+  }
 }
 
 
 
 function aaap_events_webform_submission_presave($node, &$submission) {
 
-    if(!empty($submission->sid)){
-        $submission_after = webform_get_submissions(array('nid' => $submission->nid, 'sid' => $submission->sid));
+  if(!empty($submission->sid)){
+    $submission_after = webform_get_submissions(array('nid' => $submission->nid, 'sid' => $submission->sid));
 
-        global $base_root;
+    global $base_root;
 
-        if($submission_after[$submission->sid]->data[27][0] == 'not-confirmed'
-            and $submission->data[27][0]=='confirmed'
-            and $submission->data[19][0]== 'mail_check'){
-            //dsm($submission);
-            //dsm($node);
-            $event_price = _ap_get_final_price($node, $submission);
-            $vent_guest = _ap_get_guests_fee($submission,$node);
-            $reg_fee = _ap_is_active_member(true)?$node->field_member_registration_fee['und'][0]['value']:$node->field_non_member_registration_fe['und'][0]['value'];
-            set_status_invoice($submission->sid,$submission->nid,'completed');
+    if($submission_after[$submission->sid]->data[27][0] == 'not-confirmed'
+      and $submission->data[27][0]=='confirmed'
+      and $submission->data[19][0]== 'mail_check'){
+      //dsm($submission);
+      //dsm($node);
+      $event_price = _ap_get_final_price($node, $submission);
+      $vent_guest = _ap_get_guests_fee($submission,$node);
+      $reg_fee = _ap_is_active_member(true)?$node->field_member_registration_fee['und'][0]['value']:$node->field_non_member_registration_fe['und'][0]['value'];
+      set_status_invoice($submission->sid,$submission->nid,'completed');
 
-            global $base_root;
-            $subject = SITE_NAME.' Event: Notification of Payment Received';
+      global $base_root;
+      $subject = SITE_NAME.' Event: Notification of Payment Received';
 
-            $message = 'Thank you for registering for the '.SITE_NAME.' '.$node->title.'.'."<br />"
-                .'More information about the event here: <a href="'.$base_root.'/'.drupal_get_path_alias('node/'.$submission->nid). '">'.$node->title.'</a><br /><br /><br />'
-                .'Registration Receipt'. "<br />"
-                .'Payment Type: Check'. "<br /><br />"
-                .$node->title. "<br />"
-                .'Registration Fee $'.$reg_fee."<br />"
-                .'Guest $'.$vent_guest."<br />"
-                .'------------------------------------------------'. "<br />"
-                .'Event Registration'."<br />"
-                .'$'.$reg_fee."<br />"
-                .'Guest'."<br />"
-                .'$'.$vent_guest."<br />"
-                .'------------------------------------------------'. "<br />"
-                .'Grand Total'."<br />"
-                .'$'.$event_price. "<br /><br />"
-                .'Name: '.$submission->data[1][0]." ".$submission->data[2][0]. "<br />"
-                .'Organization: '.$submission->data[5][0]. "<br />"
-                .'Email: '.$submission->data[12][0]. "<br />"
-                .'Address Line 1: '.$submission->data[6][0]. "<br />"
-                .'Address Line 2: '.$submission->data[7][0]. "<br />"
-                .'City: '.$submission->data[8][0]. "<br />"
-                .'State/Province: '.$submission->data[9][0]. "<br />"
-                .'Zip/Postal Code: '.$submission->data[10][0]. "<br /><br />"
-                .'Thank you,'. "<br /><br />"
-                .SITE_NAME;
+      $message = 'Thank you for registering for the '.SITE_NAME.' '.$node->title.'.'."<br />"
+        .'More information about the event here: <a href="'.$base_root.'/'.drupal_get_path_alias('node/'.$submission->nid). '">'.$node->title.'</a><br /><br /><br />'
+        .'Registration Receipt'. "<br />"
+        .'Payment Type: Check'. "<br /><br />"
+        .$node->title. "<br />"
+        .'Registration Fee $'.$reg_fee."<br />"
+        .'Guest $'.$vent_guest."<br />"
+        .'------------------------------------------------'. "<br />"
+        .'Event Registration'."<br />"
+        .'$'.$reg_fee."<br />"
+        .'Guest'."<br />"
+        .'$'.$vent_guest."<br />"
+        .'------------------------------------------------'. "<br />"
+        .'Grand Total'."<br />"
+        .'$'.$event_price. "<br /><br />"
+        .'Name: '.$submission->data[1][0]." ".$submission->data[2][0]. "<br />"
+        .'Organization: '.$submission->data[5][0]. "<br />"
+        .'Email: '.$submission->data[12][0]. "<br />"
+        .'Address Line 1: '.$submission->data[6][0]. "<br />"
+        .'Address Line 2: '.$submission->data[7][0]. "<br />"
+        .'City: '.$submission->data[8][0]. "<br />"
+        .'State/Province: '.$submission->data[9][0]. "<br />"
+        .'Zip/Postal Code: '.$submission->data[10][0]. "<br /><br />"
+        .'Thank you,'. "<br /><br />"
+        .SITE_NAME;
 
-            $email = new PHPMailer();
-            $email->From      = SYSTEM_MAIL;
-            $email->FromName  = SITE_NAME;
-            $email->Subject   = $subject;
-            $email->Body      = $message;
-            $email->IsHTML(true);
-            $email->AddAddress($submission->data[12][0],'');
-           $email->Send();
+      $email = new PHPMailer();
+      $email->From      = SYSTEM_MAIL;
+      $email->FromName  = SITE_NAME;
+      $email->Subject   = $subject;
+      $email->Body      = $message;
+      $email->IsHTML(true);
+      $email->AddAddress($submission->data[12][0],'');
+      $email->Send();
 
-        }
     }
+  }
 }
 
+/**
+ * Implements hook_uc_payment_entered().
+ */
+function aaap_events_uc_payment_entered($order, $method, $amount, $account, $data, $comment){
+    // Ensure order status is updated to complete after payment entered. 
+    $do = FALSE;
+    if(isset($order->products)){
+        foreach ($order->products as $key => $product) {
+            if(isset($product->nid)){
+                $nid = $product->nid;
+            $result = db_select('node', 'n')
+                        ->fields('n', array('type'))
+                        ->condition('nid', $nid,'=')
+                        ->execute()
+                        ->fetchAssoc();
+                 if(isset($result['type'])){
+                    if($result['type'] == 'event'){
+                        $do = TRUE;
+                    }  
+                 }       
+            }
+        }
+    }
+    if($do){
+        rules_invoke_event('uc_payment_entered', $order, $account);
+    }
+}
 
 function aaap_events_uc_checkout_complete($order, $account){
 
-    //dsm($order);
-    //dsm($account);
-    global $base_root;
-    $product_purchased = _aaap_product_purchased($order);
+  //dsm($order);
+  //dsm($account);
+  global $base_root;
+  $product_purchased = _aaap_product_purchased($order);
 
-    //-> Change User Rol
-    if(count($account->roles)==1){
-        if(isset($account->roles[2])){
-            //-> 2 => "authenticated user" 
-            user_save($account, array('roles' => array( DRUPAL_AUTHENTICATED_RID => 'authenticated user', 10 => 'checkout anonymous user')));
-        }
+  //-> Change User Rol
+  if(count($account->roles)==1){
+    if(isset($account->roles[2])){
+      //-> 2 => "authenticated user"
+      user_save($account, array('roles' => array( DRUPAL_AUTHENTICATED_RID => 'authenticated user', 10 => 'checkout anonymous user')));
     }
-    
-    $products = array_values($order->products);
-    $sid = $products[0]->data['atributes']['sid'];
+  }
 
-    if($product_purchased->type == PRODUCT_EVENT_TYPE){
+  $products = array_values($order->products);
+  $sid = $products[0]->data['atributes']['sid'];
 
-        //$success = _confirm_credit_card_event_registration($product_purchased->nid, $order->primary_email,EVENT_CONFIRMED_FIELD_ID,EVENT_EMAIL_FIELD_ID);
-        $submission = _confirm_submission_webform($product_purchased->nid,$sid,EVENT_CONFIRMED_FIELD_ID);
+  if($product_purchased->type == PRODUCT_EVENT_TYPE){
 
-        set_status_invoice($sid,$product_purchased->nid,'completed');
+    //$success = _confirm_credit_card_event_registration($product_purchased->nid, $order->primary_email,EVENT_CONFIRMED_FIELD_ID,EVENT_EMAIL_FIELD_ID);
+    $submission = _confirm_submission_webform($product_purchased->nid,$sid,EVENT_CONFIRMED_FIELD_ID);
 
-        /*   $event_submissions = webform_get_submissions($product_purchased->nid);
-           //dsm($event_submissions);
-           $user_submission = _get_user_submission($event_submissions,$order->primary_email,EVENT_CONFIRMED_FIELD_ID);
-           //dsm($user_submission);*/
-        $event_price = _ap_get_final_price($product_purchased, $submission);
-        $event_guest = _ap_get_guests_fee($submission,$product_purchased);
+    set_status_invoice($sid,$product_purchased->nid,'completed');
 
-        $reg_fee = _ap_is_active_member(true)?$product_purchased->field_member_registration_fee['und'][0]['value']:$product_purchased->field_non_member_registration_fe['und'][0]['value'];
+    /*   $event_submissions = webform_get_submissions($product_purchased->nid);
+       //dsm($event_submissions);
+       $user_submission = _get_user_submission($event_submissions,$order->primary_email,EVENT_CONFIRMED_FIELD_ID);
+       //dsm($user_submission);*/
+    $event_price = _ap_get_final_price($product_purchased, $submission);
+    $event_guest = _ap_get_guests_fee($submission,$product_purchased);
 
-        $subject = SITE_NAME.' Event: Notification of Payment Received';
-        $message = 'Thank you for registering for the '.SITE_NAME.' '.$product_purchased->title.'<br />'
-            .'More information about the event here: <a href="'.$base_root.'/'.drupal_get_path_alias('node/'.$submission->nid). '">'.$product_purchased->title.'</a><br /><br /><br />'
-            .'Registration Receipt'. "<br />"
-            .'Payment Type: Credit card'. "<br />"
-            .$product_purchased->title. "<br />"
-            .'Registration Fee $'.$reg_fee."<br />"
-            .'Guest $'.$event_guest."<br />"
-            .'------------------------------------------------'. "<br />"
-            .'Event Registration'."<br />"
-            .'$'.$reg_fee."<br />"
-            .'Guest'."<br />"
-            .'$'.$event_guest."<br />"
-            .'------------------------------------------------'. "<br />"
-            .'Grand Total'."<br />"
-            .'$'.$event_price. "<br /><br />"
-            .'Name: '.$submission->data[1][0]." ".$submission->data[2][0]. "<br />"
-            .'Organization: '.$submission->data[5][0]. "<br />"
-            .'Email: '.$submission->data[12][0]. "<br />"
-            .'Address Line 1: '.$submission->data[6][0]. "<br />"
-            .'Address Line 2: '.$submission->data[7][0]. "<br />"
-            .'City: '.$submission->data[8][0]. "<br />"
-            .'State/Province: '.$submission->data[9][0]. "<br />"
-            .'Zip/Postal Code: '.$submission->data[10][0]. "<br /><br />"
-            .'Thank you,'. "<br /><br />"
-            .SITE_NAME;
+    $reg_fee = _ap_is_active_member(true)?$product_purchased->field_member_registration_fee['und'][0]['value']:$product_purchased->field_non_member_registration_fe['und'][0]['value'];
 
-
-        $email = new PHPMailer();
-        $email->From      = SYSTEM_MAIL;
-        $email->FromName  = SITE_NAME;
-        $email->Subject   = $subject;
-        $email->Body      = $message;
-        $email->IsHTML(true);
-        $email->AddAddress($order->primary_email,'');
-
-       $email->Send();
+    $subject = SITE_NAME.' Event: Notification of Payment Received';
+    $message = 'Thank you for registering for the '.SITE_NAME.' '.$product_purchased->title.'<br />'
+      .'More information about the event here: <a href="'.$base_root.'/'.drupal_get_path_alias('node/'.$submission->nid). '">'.$product_purchased->title.'</a><br /><br /><br />'
+      .'Registration Receipt'. "<br />"
+      .'Payment Type: Credit card'. "<br />"
+      .$product_purchased->title. "<br />"
+      .'Registration Fee $'.$reg_fee."<br />"
+      .'Guest $'.$event_guest."<br />"
+      .'------------------------------------------------'. "<br />"
+      .'Event Registration'."<br />"
+      .'$'.$reg_fee."<br />"
+      .'Guest'."<br />"
+      .'$'.$event_guest."<br />"
+      .'------------------------------------------------'. "<br />"
+      .'Grand Total'."<br />"
+      .'$'.$event_price. "<br /><br />"
+      .'Name: '.$submission->data[1][0]." ".$submission->data[2][0]. "<br />"
+      .'Organization: '.$submission->data[5][0]. "<br />"
+      .'Email: '.$submission->data[12][0]. "<br />"
+      .'Address Line 1: '.$submission->data[6][0]. "<br />"
+      .'Address Line 2: '.$submission->data[7][0]. "<br />"
+      .'City: '.$submission->data[8][0]. "<br />"
+      .'State/Province: '.$submission->data[9][0]. "<br />"
+      .'Zip/Postal Code: '.$submission->data[10][0]. "<br /><br />"
+      .'Thank you,'. "<br /><br />"
+      .SITE_NAME;
 
 
+    $email = new PHPMailer();
+    $email->From      = SYSTEM_MAIL;
+    $email->FromName  = SITE_NAME;
+    $email->Subject   = $subject;
+    $email->Body      = $message;
+    $email->IsHTML(true);
+    $email->AddAddress($order->primary_email,'');
 
-        $subject = SITE_NAME.' Meeting: New Registrant Notification';
-        $message = 'A registrant has signed up for a '.$product_purchased->title.'. Click here to see the registration information: <a href="'.$base_root.'/node/'.$product_purchased->nid.'/submission/'.$submission->sid.'">'.$base_root.'/node/'.$product_purchased->nid.'/submission/'.$submission->sid.'</a><br /><br />'
-            .'Registrant: '.$submission->data[1][0]." ".$submission->data[2][0]."\r\n \r\n"
-            ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."<br /><br />"
-            .'Thank you,<br />'
-            .SITE_NAME;
-        $email = new PHPMailer();
-        $email->From      = SYSTEM_MAIL;
-        $email->FromName  = SITE_NAME;
-        $email->Subject   = $subject;
-        $email->Body      = $message;
-        $email->IsHTML(true);
-        $email_to = explode(',',ADMIN_MAIL);
-        foreach($email_to as $value){
-            $email->AddAddress($value,'');
-        }
-
-        $email->Send();
+    $email->Send();
 
 
-        drupal_goto('thank-you-registering');
 
-
+    $subject = SITE_NAME.' Meeting: New Registrant Notification';
+    $message = 'A registrant has signed up for a '.$product_purchased->title.'. Click here to see the registration information: <a href="'.$base_root.'/node/'.$product_purchased->nid.'/submission/'.$submission->sid.'">'.$base_root.'/node/'.$product_purchased->nid.'/submission/'.$submission->sid.'</a><br /><br />'
+      .'Registrant: '.$submission->data[1][0]." ".$submission->data[2][0]."\r\n \r\n"
+      ."Payee: ".$order->billing_first_name." ".$order->billing_last_name."<br /><br />"
+      .'Thank you,<br />'
+      .SITE_NAME;
+    $email = new PHPMailer();
+    $email->From      = SYSTEM_MAIL;
+    $email->FromName  = SITE_NAME;
+    $email->Subject   = $subject;
+    $email->Body      = $message;
+    $email->IsHTML(true);
+    $email_to = explode(',',ADMIN_MAIL);
+    foreach($email_to as $value){
+      $email->AddAddress($value,'');
     }
+
+    $email->Send();
+
+
+    drupal_goto('thank-you-registering');
+
+
+  }
 
 }
 
 
+/**
+ * Implements hook_form_alter().
+ */
+
 function aaap_events_form_alter(&$form, &$form_state, $form_id){
-    global $user;
+  global $user;
 
-    if(strpos($form_id, 'webform_client_form_')!==false){//for now this covers all webforms but should add a condition to test if it is an Event webform submission (against URL maybe)
-        $event = aaap_current_node(); //TODO: REFACTOR... CHECK IF IT'S A VALID EVENT NODE
+  if(strpos($form_id, 'webform_client_form_')!==false){//for now this covers all webforms but should add a condition to test if it is an Event webform submission (against URL maybe)
+    $event = aaap_current_node(); //TODO: REFACTOR... CHECK IF IT'S A VALID EVENT NODE
 
-        if(!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)){
-            //HIDE CONFIRMED FIELD TO NORMAL USERS
-            $form['submitted']['confirmed']['#type'] = 'hidden';
+    if(!array_key_exists(ADMINISTRATOR, $user->roles) and !array_key_exists(SUPER, $user->roles)){
+      //HIDE CONFIRMED FIELD TO NORMAL USERS
+      $form['submitted']['confirmed']['#type'] = 'hidden';
+    }
+
+    //Remove 'N/A' option from fields with options (radio buttons)
+    $form['submitted']['enter_pediatrics_used_to_prevent_spam']['#title'] = 'Enter <i>'.CAPTCHA.'</i> (used to prevent spam)' ;
+
+    //Check if event is free for members or non-members and hides the payment field in that case
+    $is_active_member = _ap_is_active_member(true);
+    if(!empty($event->field_member_registration_fee)){
+      $member_fee = $event->field_member_registration_fee['und'][0]['value'];
+
+      if(isset($event) && $event->type == 'event' && $is_active_member && $member_fee === "0"){
+        $form['submitted']['payment_method']['#type'] = 'hidden';
+        $form['submitted']['payment_method']['#required'] = '0';
+      }
+    }
+    if(!empty($event->field_non_member_registration_fee)){
+      $non_member_fee = $event->field_non_member_registration_fee['und'][0]['value'];
+      if(isset($event) && $event->type == 'event' && user_is_anonymous() && $non_member_fee === "0"){
+        $form['submitted']['payment_method']['#type'] = 'hidden';
+        $form['submitted']['payment_method']['#required'] = '0';
+      }
+    }
+    //TODO: THIS SHOULD BE GONE SOON
+    if(!array_key_exists(ACTIVE, $user->roles) && !array_key_exists(SUPER, $user->roles) && !array_key_exists(ADMINISTRATOR, $user->roles) ) {
+      //$form['submitted']['add_aaap_membership_if_applicable']['#type'] = 'hidden'; //REMOVED FIELD FROM FORM
+      $form['submitted']['select_membership_type']['#type'] = 'hidden';
+    }
+
+    if(empty($form['#submission']) and $form['#node']->type == 'event'){
+      // dsm($form);
+      array_unshift($form['#validate'] , 'event_exist');
+    }
+
+
+
+  }
+
+  if($form_id == 'uc_cart_checkout_form'){
+    //array_unshift($form['#validate'] , 'cancel_cart');
+
+    $order_ = uc_order_load(intval($_SESSION['cart_order']));
+    $product_purchased_ = _aaap_product_purchased($order_);
+
+
+    if($product_purchased_->type == PRODUCT_EVENT_TYPE){
+      //dsm($order);
+      $products_ = array_values($order_->products);
+      $sid_ = $products_[0]->data['atributes']['sid'];
+      $submission_ = webform_get_submission($product_purchased_->nid,$sid_);
+
+      $form['panes']['customer']['primary_email']['#value'] = $submission_->data[EVENT_EMAIL_FIELD_ID][0];
+    }else{
+
+      $form['panes']['customer']['primary_email']['#value'] = $user->mail;
+      //TODO: THIS SHOULD BE THE EMAIL FROM THE REG FORM INSTEAD
+    }
+  }
+
+  if ($form_id == 'event_node_form') {
+
+    if(SITE_NAME == 'AASA'){
+      //dsm($form);
+      $form['field_show_on_landing_page']['#access'] = FALSE;
+    }
+
+    unset($form['field_is_open']['und']['#options']['_none']);
+
+  }
+
+  if (isset($form['#node']->type) && isset($form['submitted'])) {
+    if ($form['#node']->type == "event") {
+      $user_is_logged_in = user_is_logged_in();
+      // +==========================================================+
+      // | Require users to login first before Event Registration.  |
+      // +==========================================================+
+      if (isset($form['#node']->field_require_users_to_login['und'][0]['value'])) {
+        $field_require_users_to_login = $form['#node']->field_require_users_to_login['und'][0]['value'];
+        if ($field_require_users_to_login == "1") {
+
+            $path_to_css = drupal_get_path('module', 'aaap_events') . '/css/webform.css';
+            $path_to_js = drupal_get_path('module', 'aaap_events') . '/js/webform.js';
+
+            $form['#attached']['css'][1] = $path_to_css;
+            $form['#attached']['js'][1] = $path_to_js;
+            $form['#attributes']['class'][] = "formulario-events";
+
+            $block = block_load('ajax_register', 'ajax_register_block');
+            $ajax_register_block = render(_block_get_renderable_array( _block_render_blocks(array($block))));
+            $form['#prefix'] = $ajax_register_block;
         }
-
-        //Remove 'N/A' option from fields with options (radio buttons)
-        $form['submitted']['enter_pediatrics_used_to_prevent_spam']['#title'] = 'Enter <i>'.CAPTCHA.'</i> (used to prevent spam)' ;
-
-        //Check if event is free for members or non-members and hides the payment field in that case
-        $is_active_member = _ap_is_active_member(true);
-        if(!empty($event->field_member_registration_fee)){
-            $member_fee = $event->field_member_registration_fee['und'][0]['value'];
-
-            if(isset($event) && $event->type == 'event' && $is_active_member && $member_fee === "0"){
-                $form['submitted']['payment_method']['#type'] = 'hidden';
-                $form['submitted']['payment_method']['#required'] = '0';
+      }
+      // Default State for user on event
+      if($user_is_logged_in){
+        $current_user = user_load($user->uid);
+        $region = "";
+        $default_value = "";
+        if(isset($current_user->field_region['und'][0]['value'])){
+            $region = $current_user->field_region['und'][0]['value'];
+        }
+        if($region == 'us'){
+            if(isset($current_user->field_us_province_state['und'][0]['value'])){
+                $default_value = $current_user->field_us_province_state['und'][0]['value'];
             }
         }
-        if(!empty($event->field_non_member_registration_fee)){
-            $non_member_fee = $event->field_non_member_registration_fee['und'][0]['value'];
-            if(isset($event) && $event->type == 'event' && user_is_anonymous() && $non_member_fee === "0"){
-                $form['submitted']['payment_method']['#type'] = 'hidden';
-                $form['submitted']['payment_method']['#required'] = '0';
+        if($region == 'canada'){
+            if(isset($current_user->field_canada_state_province['und'][0]['value'])){
+                $default_value = $current_user->field_canada_state_province['und'][0]['value'];
             }
         }
-        //TODO: THIS SHOULD BE GONE SOON
-        if(!array_key_exists(ACTIVE, $user->roles) && !array_key_exists(SUPER, $user->roles) && !array_key_exists(ADMINISTRATOR, $user->roles) ) {
-            //$form['submitted']['add_aaap_membership_if_applicable']['#type'] = 'hidden'; //REMOVED FIELD FROM FORM
-            $form['submitted']['select_membership_type']['#type'] = 'hidden';
-        }
-
-        if(empty($form['#submission']) and $form['#node']->type == 'event'){
-            // dsm($form);
-            array_unshift($form['#validate'] , 'event_exist');
-        }
-       
-
-
+        $form['submitted']['state_province']['#default_value'] = $default_value;
+        //dpm($form);
+      }
     }
-
-    if($form_id == 'uc_cart_checkout_form'){
-        //array_unshift($form['#validate'] , 'cancel_cart');
-
-        $order_ = uc_order_load(intval($_SESSION['cart_order']));
-        $product_purchased_ = _aaap_product_purchased($order_);
-
-
-        if($product_purchased_->type == PRODUCT_EVENT_TYPE){
-            //dsm($order);
-            $products_ = array_values($order_->products);
-            $sid_ = $products_[0]->data['atributes']['sid'];
-            $submission_ = webform_get_submission($product_purchased_->nid,$sid_);
-
-            $form['panes']['customer']['primary_email']['#value'] = $submission_->data[EVENT_EMAIL_FIELD_ID][0];
-        }else{
-
-            $form['panes']['customer']['primary_email']['#value'] = $user->mail;
-            //TODO: THIS SHOULD BE THE EMAIL FROM THE REG FORM INSTEAD
-        }
-    }
-
-    if ($form_id == 'event_node_form') {
-
-        if(SITE_NAME == 'AASA'){
-            //dsm($form);
-            $form['field_show_on_landing_page']['#access'] = FALSE;
-        }
-
-        unset($form['field_is_open']['und']['#options']['_none']);
-
-    }
-
+  }
 
 }
 
 
 function aaap_events_form_uc_cart_checkout_form_alter(&$form, &$form_state) {
-    // if user cancel is checkout the cart is dropped
+  // if user cancel is checkout the cart is dropped
 //    dsm('test');
 //    dsm($_POST);
 //    dsm($form);
-    if ($_POST['custom'] == t('Cancel') and $form['#node']->type == 'event') {
-        global $base_url;
-        global $user;
-        // get the cart_id (you can do it with the  uc_cart_get_id function defined in uc_cart.module at line 1310
-        if($user->uid) {
-            $cart_id = $user->uid;
-        }
-        else {
-            $cart_id = $_SESSION['uc_cart_id'];
-        }
-        // drop the cart
-        db_query('DELETE FROM {uc_cart_products} WHERE cart_id = %d', $cart_id);
-        // if order has been prepare, unset the variable
-        if (intval($_SESSION['cart_order']) > 0) {
-            uc_order_comment_save($_SESSION['cart_order'], 0, t('Customer cancelled this order from the checkout form.'));
-            unset($_SESSION['cart_order']);
-        }
-
-        drupal_goto('education-events');
-
+  if ($_POST['custom'] == t('Cancel') and $form['#node']->type == 'event') {
+    global $base_url;
+    global $user;
+    // get the cart_id (you can do it with the  uc_cart_get_id function defined in uc_cart.module at line 1310
+    if($user->uid) {
+      $cart_id = $user->uid;
     }
-    // here we define new $form['continue']['#name'] and $form['cancel']['#name'] to override the condition define in the uc_cart_checkout_form (uc_cart.pages.inc line 125)
-    // the $form['continue']['#name'] is defined too as all buttons in a form have to get the same id (FORM API)
-    $form['continue']['#name'] = 'custom';
-    $form['cancel']['#name'] = 'custom';
-    $form['cancel']['#value'] = t('NewValue');
+    else {
+      $cart_id = $_SESSION['uc_cart_id'];
+    }
+    // drop the cart
+    db_query('DELETE FROM {uc_cart_products} WHERE cart_id = %d', $cart_id);
+    // if order has been prepare, unset the variable
+    if (intval($_SESSION['cart_order']) > 0) {
+      uc_order_comment_save($_SESSION['cart_order'], 0, t('Customer cancelled this order from the checkout form.'));
+      unset($_SESSION['cart_order']);
+    }
+
+    drupal_goto('education-events');
+
+  }
+  // here we define new $form['continue']['#name'] and $form['cancel']['#name'] to override the condition define in the uc_cart_checkout_form (uc_cart.pages.inc line 125)
+  // the $form['continue']['#name'] is defined too as all buttons in a form have to get the same id (FORM API)
+  $form['continue']['#name'] = 'custom';
+  $form['cancel']['#name'] = 'custom';
+  $form['cancel']['#value'] = t('NewValue');
 }
 
 
 function event_exist($form, &$form_state) {
 
-    $email = $form_state['values']['submitted']['email'];
-    $event_submissions = webform_get_submissions($form_state['build_info']['args'][0]->nid);
-    $user_submission = _get_user_submission($event_submissions,$email);
-    //dsm($user_submission);
+  $email = $form_state['values']['submitted']['email'];
+  $event_submissions = webform_get_submissions($form_state['build_info']['args'][0]->nid);
+  $user_submission = _get_user_submission($event_submissions,$email);
+  //dsm($user_submission);
 
-    if (!empty($user_submission)) {
-        form_set_error('Email', 'You have already registered in this event.');
-    }
+  if (!empty($user_submission)) {
+    form_set_error('Email', 'You have already registered in this event.');
+  }
 
 
 }
 
 function cancel_cart($form, &$form_state) {
-   // dsm($form_state);
-    //dsm($_POST);
-    drupal_goto('education-events');
+  // dsm($form_state);
+  //dsm($_POST);
+  drupal_goto('education-events');
 
 }
 
@@ -451,7 +527,6 @@ function _ap_get_guests_fee($submission, $event){
             return 0;
     }
     elseif(SITE_NAME == 'AAAP'){
-
         if(!empty($submission->data[EVENT_TYPE_OF_GUEST][0])){
             //dsm($submission->data[EVENT_TYPE_OF_GUEST][0]);
             if ($submission->data[EVENT_TYPE_OF_GUEST][0] == 'first_option') {
@@ -467,7 +542,6 @@ function _ap_get_guests_fee($submission, $event){
 function _ap_get_final_price($event, $submission){
 
     $price = 0;
-
     if(_ap_is_active_member(true)){
         $price = $event->field_member_registration_fee['und'][0]['value'];
     }else{
@@ -475,100 +549,117 @@ function _ap_get_final_price($event, $submission){
     }
 
     //add guests fees to the final price
-    $price += _ap_get_guests_fee($submission,$event);
-
+    $guests_number = $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0];
+    $guests_price = $event->field_fee_for_guests['und'][0]['value'];
+    $price_guests = 0;
+    if (is_numeric($guests_number) && is_numeric($price)){
+        if($guests_number > 0){
+            $price_guests = $guests_number * $guests_price;
+        }    
+    }
+    //$price += _ap_get_guests_fee($submission,$event);
+    $price += $price_guests;
+    /*die(var_dump(array(
+        'price' => $price,
+        'guests_number' => $guests_number,
+        'guests_price' => $guests_price,
+        'price_guests' => $price_guests,
+        'field_member_registration_fee' => $event->field_member_registration_fee['und'][0]['value'],
+        'field_non_member_registration_fe' => $event->field_non_member_registration_fe['und'][0]['value'],
+        )));*/
     return $price;
 }
 
 function  _get_user_submission($submissions, $email){
 
-    //dsm($email);
-    // dsm($submissions);
-    foreach($submissions as $sub){
-        if($sub->data[EVENT_EMAIL_FIELD_ID][0]==$email and
-            (($sub->data[EVENT_PAYMENT_FIELD_ID][0]=='mail_check')
-                or
-                ($sub->data[EVENT_PAYMENT_FIELD_ID][0]=='credit_card'
-                    and $sub->data[EVENT_CONFIRMED_FIELD_ID][0]=='confirmed'))
-        ){
-            return $sub;
-            //TODO: REFACTOR: Better return the last one that is also not confirmed (two conditions for uniqueness)
-        }
-
+  //dsm($email);
+  // dsm($submissions);
+  foreach($submissions as $sub){
+    if($sub->data[EVENT_EMAIL_FIELD_ID][0]==$email and
+      (($sub->data[EVENT_PAYMENT_FIELD_ID][0]=='mail_check')
+        or
+        ($sub->data[EVENT_PAYMENT_FIELD_ID][0]=='credit_card'
+          and $sub->data[EVENT_CONFIRMED_FIELD_ID][0]=='confirmed'))
+    ){
+      return $sub;
+      //TODO: REFACTOR: Better return the last one that is also not confirmed (two conditions for uniqueness)
     }
 
-    return false;
+  }
+
+  return false;
 
 }
 
 
 function _get_last_submission($submissions){
 
-    $size = sizeof($submissions);
+  $size = sizeof($submissions);
 //    dsm($submissions);
 
-    if($size){
-        $arr = array_values($submissions);
-        return $arr[$size-1];
-    }
+  if($size){
+    $arr = array_values($submissions);
+    return $arr[$size-1];
+  }
 
-    return false;
+  return false;
 }
+
 function _confirm_submission_webform($nid, $sid,$confirmed_field_id){
-    $node = node_load($nid);
-    $submission = webform_get_submission($nid,$sid);
-    $submission->data[$confirmed_field_id][0] = "confirmed";
-    webform_submission_update($node, $submission);
-    return $submission;
+  $node = node_load($nid);
+  $submission = webform_get_submission($nid,$sid);
+  $submission->data[$confirmed_field_id][0] = "confirmed";
+  webform_submission_update($node, $submission);
+  return $submission;
 }
 /**
  * based on webform_results_download_form_submit in webform.report.inc ... webform 7.x-3.20
  */
 function export_submissions_to_csv($node) {
 
-    $submissions = webform_get_submissions($node->nid);
+  $submissions = webform_get_submissions($node->nid);
 
-    if (isset($_GET['filter']) ) {//TODO: validate filter
+  if (isset($_GET['filter']) ) {//TODO: validate filter
 
-        _do_filter_report($_GET['filter'], $submissions);
-    }
+    _do_filter_report($_GET['filter'], $submissions);
+  }
 
-    $options = array(
-        'delimiter' => ',',
-        'components' => array('time', '1','2','3','4','5','6','7','8','9','10','11','12','13', '21', '25', '14', '16', '29', '63', '15', '19','27'),
-        'select_keys' => 0,
-        'select_format' => 'separate',
-        'range_type' => 'range',
-        'download' => TRUE,
-    );
+  $options = array(
+      'delimiter' => ',',
+      'components' => array('time', '1','2','3','4','5','6','7','8','9','10','11','12','13', '21', '25', '14', '16', '29', '63', '15', '19','27', '30', '31'),
+      'select_keys' => 0,
+      'select_format' => 'separate',
+      'range_type' => 'range',
+      'download' => TRUE,
+  );
 
-    // Retrieve the list of required SIDs.
-    $options['sids'] = _extract_sids($submissions);
+  // Retrieve the list of required SIDs.
+  $options['sids'] = _extract_sids($submissions);
 
-    $export_info = webform_results_export($node, 'delimited', $options);
-    //dsm($export_info);
-    webform_results_download($node, $export_info);
+  $export_info = webform_results_export($node, 'delimited', $options);
+  //dsm($export_info);
+  webform_results_download($node, $export_info);
 
 }
 
 
 function _extract_sids($submissions){
-    $sids = array();
+  $sids = array();
 
-    foreach($submissions as $sub){
-        $sids[] = $sub->sid;
-    }
+  foreach($submissions as $sub){
+    $sids[] = $sub->sid;
+  }
 
-    return $sids;
+  return $sids;
 }
 
 function aaap_event_registration($nid)
 {
-    if (request_uri() == '/event/' . $nid . '/registration') {
-        return true;
-    } else {
-        return false;
-    }
+  if (request_uri() == '/event/' . $nid . '/registration') {
+    return true;
+  } else {
+    return false;
+  }
 
 }
 
@@ -578,218 +669,233 @@ function aaap_event_registration($nid)
 
 function _render_event_webform($nid)
 {
-
+    //$node = node_load($nid);
+    //return node_view($node);
     $node = node_load($nid);
     $render = node_view($node, 'full', NULL);
     $from = render($render);
     //dpm(array("from" => $from, "node" => $node));
     return $from;
-    //$node = node_load($nid);
-    //return node_view($node);
 }
 
 
 function _do_filter_report($filter, &$submissions)
 {
 
-    switch ($filter) {
+  switch ($filter) {
 
-        case 'members':
-            foreach ($submissions as $sid => $submission) {
+    case 'members':
+      foreach ($submissions as $sid => $submission) {
 
-                if ($submission->uid == 0 or user_load($submission->uid) == NULL) {
+        if ($submission->uid == 0 or user_load($submission->uid) == NULL) {
 
-                    unset($submissions[$sid]);
-                }
-                if ($submission->data[EVENT_CONFIRMED_FIELD_ID][0] == "not-confirmed") {
-                    unset($submissions[$sid]);
-                }
-            }
-            break;
+          unset($submissions[$sid]);
+        }
+        if ($submission->data[EVENT_CONFIRMED_FIELD_ID][0] == "not-confirmed") {
+          unset($submissions[$sid]);
+        }
+      }
+      break;
 
-        case 'non-members':
-            foreach ($submissions as $sid => $submission) {
-                //dsm(user_load($submission->uid));
-                //dsm($submission->uid);
-                if ($submission->uid != 0 and user_load($submission->uid) != NULL) {
-                    unset($submissions[$sid]);
-                }
-                if ($submission->data[EVENT_CONFIRMED_FIELD_ID][0] == "not-confirmed") {
-                    unset($submissions[$sid]);
-                }
-            }
-            break;
+    case 'non-members':
+      foreach ($submissions as $sid => $submission) {
+        //dsm(user_load($submission->uid));
+        //dsm($submission->uid);
+        if ($submission->uid != 0 and user_load($submission->uid) != NULL) {
+          unset($submissions[$sid]);
+        }
+        if ($submission->data[EVENT_CONFIRMED_FIELD_ID][0] == "not-confirmed") {
+          unset($submissions[$sid]);
+        }
+      }
+      break;
 
-        case 'members-pending':
-            foreach ($submissions as $sid => $submission) {
-                if ($submission->uid == 0 or user_load($submission->uid) == NULL) {
-                    unset($submissions[$sid]);
-                }
-                if ($submission->data[EVENT_CONFIRMED_FIELD_ID][0] == "confirmed") {
-                    unset($submissions[$sid]);
-                }
-            }
-            break;
+    case 'members-pending':
+      foreach ($submissions as $sid => $submission) {
+        if ($submission->uid == 0 or user_load($submission->uid) == NULL) {
+          unset($submissions[$sid]);
+        }
+        if ($submission->data[EVENT_CONFIRMED_FIELD_ID][0] == "confirmed") {
+          unset($submissions[$sid]);
+        }
+      }
+      break;
 
-        case 'non-members-pending':
-            foreach ($submissions as $sid => $submission) {
-                if ($submission->uid != 0  and user_load($submission->uid) != NULL) {
-                    unset($submissions[$sid]);
-                }
-                if ($submission->data[EVENT_CONFIRMED_FIELD_ID][0] == "confirmed") {
-                    unset($submissions[$sid]);
-                }
-            }
-            break;
+    case 'non-members-pending':
+      foreach ($submissions as $sid => $submission) {
+        if ($submission->uid != 0  and user_load($submission->uid) != NULL) {
+          unset($submissions[$sid]);
+        }
+        if ($submission->data[EVENT_CONFIRMED_FIELD_ID][0] == "confirmed") {
+          unset($submissions[$sid]);
+        }
+      }
+      break;
 
-        case 'guests':
-            foreach ($submissions as $sid => $submission) {
-                if ($submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0] == "" || $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0] == "0") {
-                    unset($submissions[$sid]);
-                }
-            }
-            break;
+    case 'guests':
+      foreach ($submissions as $sid => $submission) {
+        if ($submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0] == "" || $submission->data[EVENT_NUMBER_GUESTS_FIELD_ID][0] == "0") {
+          unset($submissions[$sid]);
+        }
+      }
+      break;
 
-    }
+  }
 
 }
 
 
 function _guest_option_readable($option){
 
-    switch($option) {
+  switch($option) {
 
-        case 'first_option':
-            return "Monday evening Dinner Cruise only";
-            break;
+    case 'first_option':
+      return "Monday evening Dinner Cruise only";
+      break;
 
-        case 'second_option':
-            return "Sunday Brunch, evening Reception & Monday evening Dinner Cruise";
-            break;
+    case 'second_option':
+      return "Sunday Brunch, evening Reception & Monday evening Dinner Cruise";
+      break;
 
-        default:
-            return "Guest option not specified";
+    default:
+      return "Guest option not specified";
 
+  }
+
+}
+
+function clean_duplicate_submission($submissions){
+    $group_by_mail = array();
+    $temporal_submissions = array();
+    foreach ($submissions as $key => $submission) {
+        if(isset($submission->data[12][0])){
+            $email = $submission->data[12][0];
+            if(!in_array($email, $group_by_mail)){
+                $temporal_submissions[$key] = $submission;
+                $group_by_mail[] = $email;
+            }
+        }
     }
-
+    return $temporal_submissions;
 }
 
 function _render_event_report($nid)
 {
-    global $user;
+  global $user;
 
 
 
-    if (isset($_GET['results']) && is_numeric($_GET['results'])) {
-        $pager_count = $_GET['results'];
-    } else {
-        //$pager_count = ?? //TODO: fix this :)
-    }
+  if (isset($_GET['results']) && is_numeric($_GET['results'])) {
+    $pager_count = $_GET['results'];
+  } else {
+    //$pager_count = ?? //TODO: fix this :)
+  }
 
     $node = node_load($nid);
     $submissions = webform_get_submissions($nid);
+    $submissions = clean_duplicate_submission($submissions);
 
 
-    if (isset($_GET['filter'])) {//TODO: validate filter
+  if (isset($_GET['filter'])) {//TODO: validate filter
 
-        _do_filter_report($_GET['filter'], $submissions);
+    _do_filter_report($_GET['filter'], $submissions);
+  }
+
+  // $count = webform_get_submission_count($nid);
+
+
+  //    $header = theme('webform_results_submissions_header', array('node' => $node));
+
+
+  //TODO: REFACTOR - THIS CAN BE A SEPARATE FUNCTION
+  $header = array(
+    array('data' => 'Name'),
+    array('data' => 'Organization'),
+    array('data' => 'Address'),
+    array('data' => 'City'),
+    array('data' => 'Guest Package'),
+    array('data' => 'Email'),
+    array('data' => 'Operations', 'colspan' => '3'),
+  );
+
+
+  foreach ($submissions as $sid => $submission) {
+
+    $name = empty($submission->data[1][0]) && empty($submission->data[2][0]) ? "--" : $submission->data[1][0] . " " . $submission->data[2][0] . "&nbsp;&nbsp;&nbsp;&nbsp;";
+    $organization = !empty($submission->data[5][0]) && !empty($submission->data[5][0]) ? $submission->data[5][0] . "&nbsp;&nbsp;&nbsp;&nbsp;" : "--";
+    $adrr = !empty($submission->data[6][0]) ? $submission->data[6][0] . "&nbsp;&nbsp;&nbsp;&nbsp;" : "--";
+    $city = !empty($submission->data[9][0]) ? $submission->data[9][0] . "&nbsp;&nbsp;&nbsp;&nbsp;" : "--";
+    //procesCity($city);
+    $_guest_option = !empty($submission->data[29][0]) ? _guest_option_readable($submission->data[29][0]) : "Guest option not specified";
+    $guest_package = !empty($submission->data[16][0]) ? $submission->data[16][0]. " guest(s) for " . $_guest_option  : "--";
+    $email = !empty($submission->data[12][0]) ? $submission->data[12][0] . "&nbsp;&nbsp;&nbsp;&nbsp;" : "--";
+    $row = array($name, $organization, $adrr, $city, $guest_package, $email);
+
+    $row[] = l(t('View '), "node/$node->nid/submission/$sid");
+    //$operation_count = 1;
+    // No need to call this multiple times, just reference this in a variable.
+    $destination = drupal_get_destination();
+    if (webform_submission_access($node, $submission, 'edit', $user)) {
+      $row[] = l(t('Edit '), "node/$node->nid/submission/$sid/edit", array('query' => $destination));
+      //$operation_count++;
     }
-
-    // $count = webform_get_submission_count($nid);
-
-
-    //    $header = theme('webform_results_submissions_header', array('node' => $node));
-
-
-    //TODO: REFACTOR - THIS CAN BE A SEPARATE FUNCTION
-    $header = array(
-        array('data' => 'Name'),
-        array('data' => 'Organization'),
-        array('data' => 'Address'),
-        array('data' => 'City'),
-        array('data' => 'Guest Package'),
-        array('data' => 'Email'),
-        array('data' => 'Operations', 'colspan' => '3'),
-    );
-
-
-    foreach ($submissions as $sid => $submission) {
-
-        $name = empty($submission->data[1][0]) && empty($submission->data[2][0]) ? "--" : $submission->data[1][0] . " " . $submission->data[2][0] . "&nbsp;&nbsp;&nbsp;&nbsp;";
-        $organization = !empty($submission->data[5][0]) && !empty($submission->data[5][0]) ? $submission->data[5][0] . "&nbsp;&nbsp;&nbsp;&nbsp;" : "--";
-        $adrr = !empty($submission->data[6][0]) ? $submission->data[6][0] . "&nbsp;&nbsp;&nbsp;&nbsp;" : "--";
-        $city = !empty($submission->data[9][0]) ? $submission->data[9][0] . "&nbsp;&nbsp;&nbsp;&nbsp;" : "--";
-        //procesCity($city);
-         $_guest_option = !empty($submission->data[29][0]) ? _guest_option_readable($submission->data[29][0]) : "Guest option not specified";
-        $guest_package = !empty($submission->data[16][0]) ? $submission->data[16][0]. " guest(s) for " . $_guest_option  : "--";
-        $email = !empty($submission->data[12][0]) ? $submission->data[12][0] . "&nbsp;&nbsp;&nbsp;&nbsp;" : "--";
-        $row = array($name, $organization, $adrr, $city, $guest_package, $email);
-
-        $row[] = l(t('View '), "node/$node->nid/submission/$sid");
-        //$operation_count = 1;
-        // No need to call this multiple times, just reference this in a variable.
-        $destination = drupal_get_destination();
-        if (webform_submission_access($node, $submission, 'edit', $user)) {
-            $row[] = l(t('Edit '), "node/$node->nid/submission/$sid/edit", array('query' => $destination));
-            //$operation_count++;
-        }
-        //        if (webform_submission_access($node, $submission, 'delete', $user)) {
-        //            $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => $destination));
-        //            $operation_count++;
-        //        }
+    //        if (webform_submission_access($node, $submission, 'delete', $user)) {
+    //            $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => $destination));
+    //            $operation_count++;
+    //        }
 //            if ($operation_count < $operation_total) {
 //                $row[count($row) - 1] = array('data' => $row[count($row) - 1], 'colspan' => $operation_total - $operation_count + 1);
 //            }
 
-        $rows[] = $row;
+    $rows[] = $row;
 
 
-    }
-    //dsm($rows);
-    drupal_set_title(t($node->title . " Report"));
-    webform_disable_page_cache();
-    webform_set_breadcrumb($node);
+  }
+  //dsm($rows);
+  drupal_set_title(t($node->title . " Report"));
+  webform_disable_page_cache();
+  webform_set_breadcrumb($node);
 
-    $element = array();
-    $element['#theme'] = 'webform_results_submissions';
-    $element['#node'] = $node;
-    $element['#submissions'] = $submissions;
-    //$element['#total_count'] = count($rows);
-    //$element['#pager_count'] = 10;
-    $element['#attached']['library'][] = array('webform', 'admin');
+  $element = array();
+  $element['#theme'] = 'webform_results_submissions';
+  $element['#node'] = $node;
+  $element['#submissions'] = $submissions;
+  //$element['#total_count'] = count($rows);
+  //$element['#pager_count'] = 10;
+  $element['#attached']['library'][] = array('webform', 'admin');
 
-    $element['table']['#theme'] = 'table';
-    $element['table']['#header'] = $header;
-    //dsm(count($rows));
-    $element['table']['#rows'] = $rows;
+  $element['table']['#theme'] = 'table';
+  $element['table']['#header'] = $header;
+  //dsm(count($rows));
+  $element['table']['#rows'] = $rows;
 //    $element['table']['#operation_total'] = $operation_total;
 
-    $all = isset($_GET['filter']) ? "<a href='/admin/event/" . $nid . "/report'>All participants</a>" : "All participants";
+  $all = isset($_GET['filter']) ? "<a href='/admin/event/" . $nid . "/report'>All participants</a>" : "All participants";
 
-    if (isset($_GET['filter'])) {
-        $filter = $_GET['filter'];
-    } else {
-        $filter = "";
-    }
+  if (isset($_GET['filter'])) {
+    $filter = $_GET['filter'];
+  } else {
+    $filter = "";
+  }
 
-    $members = $filter != 'members' ? "<a href='?filter=members'>Members Registered</a>" : "Members Registered";
-    $non_members = $filter != 'non-members' ? "<a href='?filter=non-members'>Non-Members Registered</a>" : "Non-Members Registered";
-    $members_pending = $filter != 'members-pending' ? "<a href='?filter=members-pending'>Members with payment pending</a>" : "Members with payment pending";
-    $non_members_pending = $filter != 'non-members-pending' ? "<a href='?filter=non-members-pending'>Non-Members with payment pending</a>" : "Non-Members with payment pending";
-    $guests = $filter != 'guests' ? "<a href='?filter=guests'>Participants bringing guests</a>" : "Participants bringing guests";
+  $members = $filter != 'members' ? "<a href='?filter=members'>Members Registered</a>" : "Members Registered";
+  $non_members = $filter != 'non-members' ? "<a href='?filter=non-members'>Non-Members Registered</a>" : "Non-Members Registered";
+  $members_pending = $filter != 'members-pending' ? "<a href='?filter=members-pending'>Members with payment pending</a>" : "Members with payment pending";
+  $non_members_pending = $filter != 'non-members-pending' ? "<a href='?filter=non-members-pending'>Non-Members with payment pending</a>" : "Non-Members with payment pending";
+  $guests = $filter != 'guests' ? "<a href='?filter=guests'>Participants bringing guests</a>" : "Participants bringing guests";
 
-    $filters = "Showing: $all | $members | $non_members | $members_pending | $non_members_pending | $guests";
+  $filters = "Showing: $all | $members | $non_members | $members_pending | $non_members_pending | $guests";
 
-    if (isset($_GET['filter']) || true) {
-        $csv_filter = "filter=" . $_GET['filter'];
-    } else {
-        $csv_filter = "";
-    }
+  if (isset($_GET['filter']) || true) {
+    $csv_filter = "filter=" . $_GET['filter'];
+  } else {
+    $csv_filter = "";
+  }
 
-    $csv = " -- <a href='/admin/event/$nid/csv?$csv_filter'>DOWNLOAD AS CSV</a>";
+  $csv = " -- <a href='/admin/event/$nid/csv?$csv_filter'>DOWNLOAD AS CSV</a>";
 
 
-    return $filters . $csv . drupal_render($element);
+  return $filters . $csv . drupal_render($element);
 }
 
 
