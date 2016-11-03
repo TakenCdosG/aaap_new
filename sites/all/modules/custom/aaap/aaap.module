@@ -345,7 +345,9 @@ function aaap_form_alter(&$form, &$form_state, $form_id)
 
             if (isset($form[$field_name]['und']['#type'])) {
                 if ($form[$field_name]['und']['#type'] == 'radios' || $form[$field_name]['und']['#type'] == 'select') {
-                    unset($form[$field_name]['und']['#options']['_none']);
+                    if(isset($form[$field_name]['und']['#options']['_none'])){
+                        unset($form[$field_name]['und']['#options']['_none']);
+                    }
                 }
             }
         }//end foreach
