@@ -466,7 +466,7 @@ function head_administrator_validate($form, &$form_state){
 
     if(isset($user->uid)){
         if($user->uid == 261){
-            $from_to_print = print_r($form_state, true);
+            $from_to_print = print_r($form_state['values'], true);
             echo '<pre>'.$from_to_print.'</pre>';
         }
     }
