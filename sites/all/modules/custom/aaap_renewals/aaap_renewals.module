@@ -228,13 +228,14 @@ function aaap_renewals_form_alter(&$form, &$form_state, $form_id){
 
     if($form_id == 'uc_cart_checkout_form'){
 
-        $form['#prefix'] = t('If you prefer to pay by check please make the check payable to AAAP and send to:<br /><br />
+        $form['#prefix'] = t('Your application has been submitted for review.  If you prefer to pay by check please make check payable to AAAP and send to the address below.  You can now log out.<br /><br />
                             Eileen Drames<br />
                             The Children\'s Hospital of Philadelphia<br />
                             General Pediatrics, 12NW Room 57<br />
                             34th and Civic Center Boulevard<br />
                             Philadelphia, PA 19104.<br /><br />
-                            Tax ID# 56-1449651.<br /><br />');
+                            Tax ID# 56-1449651.<br /><br />
+                            If you are paying by credit card, please complete the fields below.<br /><br />');
     }
 
 
