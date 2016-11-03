@@ -465,27 +465,29 @@ function aaap_events_form_uc_cart_checkout_form_alter(&$form, &$form_state) {
 //    dsm('test');
 //    dsm($_POST);
 //    dsm($form);
-  if ($_POST['custom'] == t('Cancel') and $form['#node']->type == 'event') {
-    global $base_url;
-    global $user;
-    // get the cart_id (you can do it with the  uc_cart_get_id function defined in uc_cart.module at line 1310
-    if($user->uid) {
-      $cart_id = $user->uid;
-    }
-    else {
-      $cart_id = $_SESSION['uc_cart_id'];
-    }
-    // drop the cart
-    db_query('DELETE FROM {uc_cart_products} WHERE cart_id = %d', $cart_id);
-    // if order has been prepare, unset the variable
-    if (intval($_SESSION['cart_order']) > 0) {
-      uc_order_comment_save($_SESSION['cart_order'], 0, t('Customer cancelled this order from the checkout form.'));
-      unset($_SESSION['cart_order']);
-    }
+  if(isset($_POST['custom'])){
+    if ($_POST['custom'] == t('Cancel') and $form['#node']->type == 'event') {
+      global $base_url;
+      global $user;
+      // get the cart_id (you can do it with the  uc_cart_get_id function defined in uc_cart.module at line 1310
+      if($user->uid) {
+        $cart_id = $user->uid;
+      }
+      else {
+        $cart_id = $_SESSION['uc_cart_id'];
+      }
+      // drop the cart
+      db_query('DELETE FROM {uc_cart_products} WHERE cart_id = %d', $cart_id);
+      // if order has been prepare, unset the variable
+      if (intval($_SESSION['cart_order']) > 0) {
+        uc_order_comment_save($_SESSION['cart_order'], 0, t('Customer cancelled this order from the checkout form.'));
+        unset($_SESSION['cart_order']);
+      }
 
-    drupal_goto('education-events');
-
+      drupal_goto('education-events');
+    }    
   }
+
   // here we define new $form['continue']['#name'] and $form['cancel']['#name'] to override the condition define in the uc_cart_checkout_form (uc_cart.pages.inc line 125)
   // the $form['continue']['#name'] is defined too as all buttons in a form have to get the same id (FORM API)
   $form['continue']['#name'] = 'custom';
