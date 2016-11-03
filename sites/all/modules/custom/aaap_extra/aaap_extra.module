@@ -285,17 +285,18 @@ function aaap_extra_form_alter(&$form, &$form_state, $form_id){
         $order = uc_order_load(intval($_SESSION['cart_order']));
         $product_purchased = _aaap_product_purchased($order);
         $products = array_values($order->products);
-        $sid = $products[0]->data['atributes']['sid'];
+        
+        if(isset($products[0]->data['atributes']['sid'])){
 
-       if($product_purchased->nid == BECOME_SPONSOR_PRODUCT){
+            $sid = $products[0]->data['atributes']['sid'];
+            if($product_purchased->nid == BECOME_SPONSOR_PRODUCT){
+                $submission = webform_get_submission(BECOME_SPONSOR_FORM_ID,$sid);
+                $form['panes']['customer']['primary_email']['#value'] = $submission->data[BECOME_SPONSOR_EMAIL_FIELD_ID][0];
+            }elseif($product_purchased->nid == POST_JOB_PRODUCT){
+                $submission = webform_get_submission(POST_JOB_FORM_ID,$sid);
+                $form['panes']['customer']['primary_email']['#value'] = $submission->data[POST_JOB_EMAIL_FIELD_ID][0];
+            }
 
-            $submission = webform_get_submission(BECOME_SPONSOR_FORM_ID,$sid);
-            $form['panes']['customer']['primary_email']['#value'] = $submission->data[BECOME_SPONSOR_EMAIL_FIELD_ID][0];
-
-        }elseif($product_purchased->nid == POST_JOB_PRODUCT){
-
-            $submission = webform_get_submission(POST_JOB_FORM_ID,$sid);
-            $form['panes']['customer']['primary_email']['#value'] = $submission->data[POST_JOB_EMAIL_FIELD_ID][0];
         }
     }
 }
