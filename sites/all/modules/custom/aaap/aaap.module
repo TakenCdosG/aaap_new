@@ -244,7 +244,7 @@ function aaap_globals($arg)
     }
 
     return 0;
-
+ 
 }
 
 
@@ -466,14 +466,14 @@ function head_administrator_validate($form, &$form_state){
     if(isset($parameters['pass-reset-token'])){
         $come_from_pass_reset = true;
     }
-
+    
     if(!$come_from_pass_reset){
         if(!($form_state['values']['field_attach']['und'][0]['value']== 'yes' or $form_state['values']['field_no_attach']['und'][0]['value']== 'no')){
             form_set_error('field_attach', 'Answer this question : Are you the head administrator of your department?');
         }
-
+        
         if($form_state['values']['field_no_attach']['und'][0]['value'] == 'no' and $form_state['values']['field_head_admin_info']['und'][0]['field_email_head_admin']['und'][0]['email'] == ''){
-            form_set_error("field_head_admin_info']['und'][0]['field_email_head_admin]['und'][0]['email", 'Email in HEAD ADMINISTRATOR INFO is required');
+            form_set_error('field_head_admin_info', 'Email in HEAD ADMINISTRATOR INFO is required');
         }
     }
 
