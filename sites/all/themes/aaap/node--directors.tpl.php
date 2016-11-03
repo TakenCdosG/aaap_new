@@ -84,7 +84,9 @@
     ?>
 
   <div class="content"<?php print $content_attributes; ?>>
-      <div class="field_custom_body"><?php print $node->body['und'][0]['value']; ?></div>
+      <?php if(isset($node->body['und'][0]['value'])): ?>
+        <div class="field_custom_body"><?php print $node->body['und'][0]['value']; ?></div>
+      <?php endif; ?>
       <table class="table-directors">
       <?php
       $i = 0;
