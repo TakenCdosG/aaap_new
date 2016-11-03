@@ -1209,7 +1209,7 @@ function get_orders_by_user_id($user, $order_id = NULL, $order_status = 'complet
 {
 
     $orders = array();
-
+    $add_where = '';
     if ($order_id) {
         $add_where = 'AND order_id=' . $order_id;
     }
