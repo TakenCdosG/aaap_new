@@ -219,7 +219,7 @@ $email->AddAddress(SYSTEM_MAIL, $to);
     }
 
         $file_url = file_create_url($file->uri);
-        $realpath = drupal_realpath($file->uri));
+        $realpath = drupal_realpath($file->uri);
 
         $file_to_attach = $file_url;
         $file_to_attach = str_replace('https://', '', $file_to_attach);
