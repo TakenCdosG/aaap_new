@@ -224,7 +224,8 @@ $email->AddAddress(SYSTEM_MAIL, $to);
         unset($file_to_attach[0]);
         $file_to_attach = implode('/', $file_to_attach);
 
-
+        dpm(array('file_to_attach' => $file_to_attach, 'file' => $file));
+        
         $email->AddAttachment($file_to_attach, $file->filename);
 
         return $email->Send();
