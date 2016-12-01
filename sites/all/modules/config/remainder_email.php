@@ -1,5 +1,5 @@
 <?php
-mail($user->mail,'AAAP Renewal - Time to Renew Your Membership' ,'AAAP Members,'."\r\n"
+mail($user->mail,'AAAP Renewal - Time to Renew Your Membership' ,'AAAP Members,'."\r\n\n"
     .'It is time to renew your annual AAAP Membership for 2017!'. "\r\n\n"
     .'Amount Due: $600 '. "\r\n\n"
 	.'*Note: Discounted rate if paid in full and received by December 1st.'. "\r\n\n"
