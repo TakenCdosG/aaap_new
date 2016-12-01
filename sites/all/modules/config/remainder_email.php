@@ -1,9 +1,7 @@
 <?php
-mail($user->mail,'AAAP Renewal - Take Advantage of Early Bird Rate' ,'AAAP Members,'."\r\n"
-    .'It is time to renew your annual AAAP Membership for 2017.'. "\r\n\n"
-	.'Take advantage of the Early Bird membership rate!'. "\r\n\n"
-    .'Amount Due: $500 November 2016*'. "\r\n"
-    .'            $600 after November 30, 2016'. "\r\n\n"
+mail($user->mail,'AAAP Renewal - Time to Renew Your Membership' ,'AAAP Members,'."\r\n"
+    .'It is time to renew your annual AAAP Membership for 2017!'. "\r\n\n"
+    .'Amount Due: $600 '. "\r\n\n"
 	.'*Note: Discounted rate if paid in full and received by December 1st.'. "\r\n\n"
 	.'Steps for Renewal:'. "\r\n"
     .'1. Go to the AAAP website www.aaapeds.org.'. "\r\n"
