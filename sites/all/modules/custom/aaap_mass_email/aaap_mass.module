@@ -218,14 +218,18 @@ $email->AddAddress(SYSTEM_MAIL, $to);
         $email->addBCC( $rcp);
     }
 
-        $file_to_attach = file_create_url($file->uri);
+        $file_url = file_create_url($file->uri);
+        $realpath = drupal_realpath($file->uri);
+
+        $file_to_attach = $file_url;
         $file_to_attach = str_replace('https://', '', $file_to_attach);
         $file_to_attach = explode('/', $file_to_attach);
         unset($file_to_attach[0]);
         $file_to_attach = implode('/', $file_to_attach);
 
+        //dpm(array('file_to_attach' => $file_to_attach, 'file' => $file, 'file_url' => $file_url));
 
-        $email->AddAttachment($file_to_attach, $file->filename);
+        $email->AddAttachment($realpath, $file->filename);
 
         return $email->Send();
 
