@@ -462,12 +462,12 @@ function get_payment_method_string($payment_method){
 
 }
 
-function load_members() {
+function load_members($role = ACTIVE) {
 
     $members = array();
 
     // Adding Orders - Credit Card Payment
-    $result = db_query('SELECT users.uid FROM {users,users_roles} WHERE users.uid = users_roles.uid and users_roles.rid = 5 GROUP BY users.uid');
+    $result = db_query("SELECT users.uid FROM {users,users_roles} WHERE users.uid = users_roles.uid and users_roles.rid = $role GROUP BY users.uid");
 
 
     foreach ($result as $record) {
@@ -497,6 +497,10 @@ function initQueue($env = 'test'){
 
         case 'live':
             $members = load_members();
+            break;
+
+        case 'live-expired':
+            $members = load_members(EXPIRED);
             break;
 
     }

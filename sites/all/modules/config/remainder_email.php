@@ -1,6 +1,6 @@
 <?php
-mail($user->mail,'AAAP Renewal - Membership has Lapsed, Renew Now' ,'AAAP Members,'."\r\n\n"
-    .'Your AAAP Membership has now LAPSED. Please follow the steps below to renew your annual AAAP Membership for 2017.'. "\r\n\n"
+mail($user->mail,'AAAP Renewal - Overdue for Renewal' ,'AAAP Members,'."\r\n\n"
+    .'Your AAAP Membership is now OVERDUE.'. "\r\n\n"
     .'Amount Due: $600 '. "\r\n\n"
 	.'Steps for Renewal:'. "\r\n"
     .'1. Go to the AAAP website www.aaapeds.org.'. "\r\n"
